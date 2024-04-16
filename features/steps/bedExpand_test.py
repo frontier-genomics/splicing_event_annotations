@@ -14,6 +14,8 @@ def step_impl(context):
 def step_impl(context):
     context.expanded = pd.DataFrame(context.expanded).astype(str)
     print(context.expanded)
-    context.test_data = pd.DataFrame(context.table).astype(str)
+    context.test_data = pd.DataFrame(context.table, columns=context.table.headings).astype(str)
     print(context.test_data)
+    difference = context.expanded.compare(context.test_data)
+    print(difference)
     assert context.expanded.equals(context.test_data)

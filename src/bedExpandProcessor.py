@@ -11,7 +11,12 @@ class BedExpand:
         df = self.bed_file
         df.columns = ['chr', 'start', 'end', 'name', 'score', 'strand']
         split_names = df['name'].str.split('_')
-        df['transcript'] = "f{split_names.str[0]}_{split_names.str[1]}"
-        df['intron'] = split_names.str[3]
+        df['transcript'] = split_names.str[0] + "_" + split_names.str[1]
+        df['intron'] = split_names.str[3].astype(int) + 1
         
         return df[['chr', 'start', 'end', 'transcript', 'intron', 'strand']]
+    
+    def write_parsed_bed(self):
+        parsed_bed = self.parse_bed_file()
+        parsed_bed.to_csv("resources/annotations/curated_introns_sorted.tsv", sep='\t', header=True, index=False)        
+        return parsed_bed

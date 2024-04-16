@@ -39,9 +39,9 @@ class EventAnnotate:
         self.annotation_choice = annotation_choice
 
         if self.annotation_choice == "refseq_mane":
-            self.annotation = pd.read_csv("resources/annotations/refseq_mane_introns_sorted.bed", sep='\t', header=None)
+            self.annotation = pd.read_csv("resources/annotations/refseq_mane_introns_sorted.tsv", sep='\t', header=None)
         elif self.annotation_choice == "refseq_curated":
-            self.annotation = pd.read_csv("resources/annotations/curated_introns_sorted.bed", sep='\t', header=None)
+            self.annotation = pd.read_csv("resources/annotations/curated_introns_sorted.bed.gz", sep='\t', header=None)
         else:
             raise ValueError("Invalid annotation choice. Please select either 'refseq_mane' or 'refseq_curated'.")
         

@@ -3,3 +3,4 @@
 .RData
 .Ruserdata
 src/__pycache__/
+*.DS_Store
