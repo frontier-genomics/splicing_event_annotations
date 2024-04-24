@@ -54,21 +54,33 @@ class EventAnnotate:
             if end_matches.empty:
                 print("start matches")
                 end_matches = ""
+                
                 start_intron = start_matches['intron'].iloc[0]
                 start_tx = start_matches['transcript'].iloc[0]
+                
+                match_coords = start_matches['end'].iloc[0]
+                self_coords = self.coordinates['end']
+                
                 strand = self.coordinates['strand']
-                distance = self.coordinates['end'] - start_matches['end'].iloc[0]
                 splice_site_type = "acceptor" if strand == "+" else "donor"
+                distance = self_coords - match_coords if strand == "+" else match_coords - self_coords
+                
                 return(self._name_event(start_tx, distance, self.coordinates['end'], splice_site_type, start_matches))
             
             elif start_matches.empty:
                 print("end matches")
                 start_matches = ""
+                
                 end_intron = end_matches['intron'].iloc[0]
                 end_tx = end_matches['transcript'].iloc[0]
-                distance = end_matches['start'].iloc[0] - self.coordinates['start']
+                
+                match_coords = end_matches['start'].iloc[0]
+                self_coords = self.coordinates['start']
+                
                 strand = self.coordinates['strand']
                 splice_site_type = "donor" if strand == "+" else "acceptor"
+                distance = self_coords - match_coords if strand == "+" else match_coords - self_coords
+                
                 return(self._name_event(end_tx, distance, self.coordinates['start'], splice_site_type, end_matches))
         
         else:
@@ -117,6 +129,9 @@ class EventAnnotate:
             else:
                 supp_event = ""    
                 
+            distance = distance - 1 if self.coordinates['strand'] == "+" and splice_site_type == "acceptor" else distance
+            distance = distance + 1 if self.coordinates['strand'] == "-" and splice_site_type == "acceptor" else distance
+                
             event = f"{supp_event}intronic cryptic {splice_site_type} @ {direction}{distance}"
             return {'transcript': tx, 'event': event}
             
@@ -129,6 +144,10 @@ class EventAnnotate:
             if not within_tx_exon.empty:
                 print("found an exonic variant")
                 print(f"{start_end} is between {within_tx_exon}")
+                
+                distance = distance + 1 if self.coordinates['strand'] == "+" and splice_site_type == "donor" else distance
+                distance = distance - 1 if self.coordinates['strand'] == "-" and splice_site_type == "donor" else distance
+                
                 event = f"exonic cryptic {splice_site_type} @ {direction}{distance}"
                 return {'transcript': tx, 'event': event}
             else:
