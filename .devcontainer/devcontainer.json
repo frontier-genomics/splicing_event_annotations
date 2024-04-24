@@ -10,6 +10,8 @@
 	// "forwardPorts": [],
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "bash run-init.sh",
+	"runArgs": ["-v","/run/host-services/ssh-auth.sock:/ssh-auth.sock"],
+    "containerEnv": {"SSH_AUTH_SOCK":"/ssh-auth.sock"},
 	"customizations": {
 		"vscode": {
 			"extensions": [
