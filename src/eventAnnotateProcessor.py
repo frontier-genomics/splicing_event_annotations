@@ -3,12 +3,13 @@ import numpy as np
 
 class EventAnnotate:
 
-    def __init__(self, chrom, start, end, strand, type, annotation_choice):
+    def __init__(self, chrom, start, end, strand, transcript, type, annotation_choice):
         self.coordinates = {
             'chrom': str(chrom),
             'start': np.int64(start),
             'end': np.int64(end),
             'strand': str(strand),
+            'transcript': str(transcript),
             'type': str(type)
         }
         self.annotation_choice = annotation_choice
@@ -25,7 +26,7 @@ class EventAnnotate:
         
         self.annotation.columns = ['chrom', 'start', 'end', 'transcript', 'intron', 'strand']
 
-    def matcher(self, start_end, base = 1):
+    def matcher(self, start_end, alternative = False, base = 1):
         if start_end not in ['start', 'end']:
             raise ValueError("Invalid start_end choice. Please select either 'start' or 'end'.")
         
@@ -35,11 +36,20 @@ class EventAnnotate:
             query = self.coordinates[start_end]
         
         chrom = self.coordinates['chrom']
+        transcript = self.coordinates['transcript'] 
         
-        matching_rows = self.annotation[
-            (self.annotation[start_end] == query) &
-            (self.annotation['chrom'] == chrom)
-        ]
+        if alternative:
+            matching_rows = self.annotation[
+                (self.annotation[start_end] == query) &
+                (self.annotation['chrom'] == chrom) &
+                (self.annotation['transcript'] != transcript)
+            ]
+        else:
+            matching_rows = self.annotation[
+                (self.annotation[start_end] == query) &
+                (self.annotation['chrom'] == chrom) &
+                (self.annotation['transcript'] == transcript)
+            ]
         
         matching_rows['start'] = matching_rows['start'] + base
         match = pd.DataFrame(matching_rows)
@@ -65,7 +75,9 @@ class EventAnnotate:
                 splice_site_type = "acceptor" if strand == "+" else "donor"
                 distance = self_coords - match_coords if strand == "+" else match_coords - self_coords
                 
-                return(self._name_event(start_tx, distance, self.coordinates['end'], splice_site_type, start_matches))
+                event_name = self._name_event(start_tx, distance, self.coordinates['end'], splice_site_type, start_matches)
+
+                return(event_name)
             
             elif start_matches.empty:
                 print("end matches")
@@ -80,8 +92,10 @@ class EventAnnotate:
                 strand = self.coordinates['strand']
                 splice_site_type = "donor" if strand == "+" else "acceptor"
                 distance = self_coords - match_coords if strand == "+" else match_coords - self_coords
-                
-                return(self._name_event(end_tx, distance, self.coordinates['start'], splice_site_type, end_matches))
+    
+                event_name = self._name_event(end_tx, distance, self.coordinates['start'], splice_site_type, end_matches)
+
+                return(event_name)
         
         else:
             start_intron = start_matches['intron'].iloc[0]
@@ -99,11 +113,49 @@ class EventAnnotate:
                     return {'transcript': start_tx, 'event': event}
                 elif start_intron != end_intron:
                     event = f"exon {'-'.join(str(i) for i in range(min(introns)+1, max(introns)+1))} skipping"
+                    alternate = self._is_alternate()
+                    event = f"{alternate['alternate']}{event}{alternate['event']}"
                     return {'transcript': start_tx, 'event': event}
 
             elif start_tx != end_tx:
                     return {'transcript': "transcript mismatch", 'event': "unknown event"}
-                
+
+    def _is_alternate(self):
+        alternate_start_matches = self.matcher('start', alternative = True)
+        alternate_end_matches = self.matcher('end', alternative = True)
+        alternate_start_matches = alternate_start_matches.sort_values(by='transcript')
+        alternate_end_matches = alternate_end_matches.sort_values(by='transcript')
+        print(alternate_start_matches)
+        print(alternate_end_matches)
+
+        if alternate_start_matches.empty or alternate_end_matches.empty:
+            return {'alternate': "", 'event': ""}
+        else:
+            unique_start_transcripts = alternate_start_matches['transcript'].unique()
+            unique_end_transcripts = alternate_end_matches['transcript'].unique()
+            start_intron = alternate_start_matches['intron'].iloc[0]
+            end_intron = alternate_end_matches['intron'].iloc[0]
+            start_tx = alternate_start_matches['transcript'].iloc[0]
+            if self.coordinates['type'] == "ir":
+                event = f"intron {start_intron} retention"
+                return {'alternate': 'alternate ', 'event': f" ({start_tx} {event})"}
+            elif start_intron == end_intron:
+                if len(unique_start_transcripts) > 1 and len(unique_end_transcripts) > 1:
+                    print("all alternate start and end match transcripts match each other")
+                    print(f"Number of unique start matches: {len(unique_start_transcripts)}")
+                    print(f"Number of unique end matches: {len(unique_end_transcripts)}")
+                    print(unique_start_transcripts)
+                    transcripts = set(unique_start_transcripts) & set(unique_end_transcripts)
+                    print(transcripts)
+                    transcripts_str = ', '.join(sorted(transcripts))
+                    event = f"{transcripts_str}"
+                    return {'alternate': 'alternate ', 'event': f" ({event})"}
+                else:
+                    event = f"exon {start_intron}-{end_intron+1}"
+                    return {'alternate': 'alternate ', 'event': f" ({start_tx} {event})"}
+            else:
+                return {'alternate': "", 'event': ""}
+
     def _name_event(self, tx, distance, start_end, splice_site_type, matches):
         direction = "+" if distance > 0 else ""
         within_tx_intron = self.annotation[(self.annotation['transcript'] == tx) &
@@ -131,8 +183,13 @@ class EventAnnotate:
                 
             distance = distance - 1 if self.coordinates['strand'] == "+" and splice_site_type == "acceptor" else distance
             distance = distance + 1 if self.coordinates['strand'] == "-" and splice_site_type == "acceptor" else distance
-                
-            event = f"{supp_event}intronic cryptic {splice_site_type} @ {direction}{distance}"
+            distance = distance + 1 if self.coordinates['strand'] == "+" and splice_site_type == "donor" else distance
+            
+            location = "intronic "
+            alternate = self._is_alternate()
+            print(alternate)
+            cryptic = "cryptic " if alternate['alternate'] == "" else ""
+            event = f"{alternate['alternate']}{supp_event}{location}{cryptic}{splice_site_type} @ {direction}{distance}{alternate['event']}"
             return {'transcript': tx, 'event': event}
             
         else:
@@ -167,7 +224,10 @@ class EventAnnotate:
                 return {'transcript': tx, 'event': event}
             else:
                 print("no exonic variant either")
-                event = f"intergenic cryptic {splice_site_type} @ {direction}{distance}"
+                location = "intergenic "
+                alternate = self._is_alternate()
+                cryptic = "cryptic " if alternate['alternate'] == "" else ""
+                event = f"{alternate['alternate']}{location}{cryptic}{splice_site_type} @ {direction}{distance}{alternate['event']}"
                 return {'transcript': tx, 'event': event}
                 # Find alternative splicing
                 # Find unannotated splicing
@@ -176,12 +236,14 @@ class EventAnnotate:
         within_tx_intron_start = self.annotation[
             (self.annotation['chrom'] == self.coordinates['chrom']) &
             (self.annotation['start'] <= self.coordinates['start']) &
+            (self.annotation['transcript'] == self.coordinates['transcript']) &
             (self.annotation['end'] >= self.coordinates['start'])
         ]
         
         within_tx_intron_end = self.annotation[
             (self.annotation['chrom'] == self.coordinates['chrom']) &
             (self.annotation['start'] <= self.coordinates['end']) &
+            (self.annotation['transcript'] == self.coordinates['transcript']) &
             (self.annotation['end'] >= self.coordinates['end'])
         ]
         
@@ -231,12 +293,14 @@ class EventAnnotate:
             within_tx_exon_start = self.exons[
                 (self.exons['chr'] == self.coordinates['chrom']) &
                 (self.exons['start'] <= self.coordinates['start']) &
+                (self.exons['transcript'] == self.coordinates['transcript']) &
                 (self.exons['end'] >= self.coordinates['start'])
             ]
 
             within_tx_exon_end = self.exons[
                 (self.exons['chr'] == self.coordinates['chrom']) &
                 (self.exons['start'] <= self.coordinates['end']) &
+                (self.exons['transcript'] == self.coordinates['transcript']) &
                 (self.exons['end'] >= self.coordinates['end'])
             ]
             
