@@ -144,11 +144,26 @@ class EventAnnotate:
             if not within_tx_exon.empty:
                 print("found an exonic variant")
                 print(f"{start_end} is between {within_tx_exon}")
+
+                if within_tx_exon['exon'].iloc[0] != matches['intron'].iloc[0] and within_tx_exon['exon'].iloc[0] != matches['intron'].iloc[0]+1 :
+                    print("multiple exons/introns involved")
+                    print(f"match with intron {matches['intron'].iloc[0]}")
+                    print(f"within exon {within_tx_exon['exon'].iloc[0]}")
+                    print(f"exon != intron {within_tx_exon['exon'].iloc[0] != matches['intron'].iloc[0]}")
+                    print(f"exon != intron+1 {within_tx_exon['exon'].iloc[0] != matches['intron'].iloc[0]+1}")
+                    start_intron = int(matches['intron'].iloc[0])
+                    end_intron = int(within_tx_exon['exon'].iloc[0])
+                    introns = [start_intron, end_intron]
+                    supp_event = f"exon {'-'.join(str(i) for i in range(min(introns)+1, max(introns)+1))} skipping/"
+                    print(f"the second event is {supp_event}")
+                    distance = start_end - within_tx_exon['end'].iloc[0] - 1
+                    direction = "+" if distance > 0 else ""
+                else:
+                    supp_event = ""   
+
+                distance = distance + 1 if self.coordinates['strand'] == "-" and splice_site_type == "donor" else distance
                 
-                distance = distance + 1 if self.coordinates['strand'] == "+" and splice_site_type == "donor" else distance
-                distance = distance - 1 if self.coordinates['strand'] == "-" and splice_site_type == "donor" else distance
-                
-                event = f"exonic cryptic {splice_site_type} @ {direction}{distance}"
+                event = f"{supp_event}exonic cryptic {splice_site_type} @ {direction}{distance}"
                 return {'transcript': tx, 'event': event}
             else:
                 print("no exonic variant either")
