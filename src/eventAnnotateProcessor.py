@@ -133,26 +133,38 @@ class EventAnnotate:
         else:
             unique_start_transcripts = alternate_start_matches['transcript'].unique()
             unique_end_transcripts = alternate_end_matches['transcript'].unique()
+
+            transcripts = set(unique_start_transcripts) & set(unique_end_transcripts)
+
+            intron_match_transcripts = []
+
+            for transcript in transcripts:
+                start_intron = alternate_start_matches[alternate_start_matches['transcript'] == transcript]['intron'].iloc[0]
+                end_intron = alternate_end_matches[alternate_end_matches['transcript'] == transcript]['intron'].iloc[0]
+                if start_intron == end_intron:
+                    intron_match_transcripts.append(transcript)
+
+            transcripts = intron_match_transcripts
+
             start_intron = alternate_start_matches['intron'].iloc[0]
             end_intron = alternate_end_matches['intron'].iloc[0]
             start_tx = alternate_start_matches['transcript'].iloc[0]
             if self.coordinates['type'] == "ir":
-                event = f"intron {start_intron} retention"
-                return {'alternate': 'alternate ', 'event': f" ({start_tx} {event})"}
+                return {"no current support for alternate intron retention"}
             elif start_intron == end_intron:
-                if len(unique_start_transcripts) > 1 and len(unique_end_transcripts) > 1:
+                if len(transcripts) > 1:
                     print("all alternate start and end match transcripts match each other")
                     print(f"Number of unique start matches: {len(unique_start_transcripts)}")
                     print(f"Number of unique end matches: {len(unique_end_transcripts)}")
                     print(unique_start_transcripts)
-                    transcripts = set(unique_start_transcripts) & set(unique_end_transcripts)
+                    #transcripts = set(unique_start_transcripts) & set(unique_end_transcripts)
                     print(transcripts)
                     transcripts_str = ', '.join(sorted(transcripts))
                     event = f"{transcripts_str}"
                     return {'alternate': 'alternate ', 'event': f" ({event})"}
                 else:
                     event = f"exon {start_intron}-{end_intron+1}"
-                    return {'alternate': 'alternate ', 'event': f" ({start_tx} {event})"}
+                    return {'alternate': 'alternate ', 'event': f" ({transcripts[0]} {event})"}
             else:
                 return {'alternate': "", 'event': ""}
 
@@ -227,6 +239,7 @@ class EventAnnotate:
                 location = "intergenic "
                 alternate = self._is_alternate()
                 cryptic = "cryptic " if alternate['alternate'] == "" else ""
+                distance = distance + 1 if self.coordinates['strand'] == "-" and splice_site_type == "acceptor" else distance
                 event = f"{alternate['alternate']}{location}{cryptic}{splice_site_type} @ {direction}{distance}{alternate['event']}"
                 return {'transcript': tx, 'event': event}
                 # Find alternative splicing
@@ -252,7 +265,11 @@ class EventAnnotate:
             tx = within_tx_intron_start['transcript'].iloc[0]
             strand_check = within_tx_intron_start['strand'].iloc[0] == self.coordinates['strand']
             strand_in = " (opposite strand)" if not strand_check else ""
-            return {'transcript': tx, 'event': f"unannotated intronic junction{strand_in}"}
+            location = "intronic junction"
+            alternate = self._is_alternate()
+            unannotated = "unannotated " if alternate['alternate'] == "" else ""
+            event = f"{alternate['alternate']}{unannotated}{location}{strand_in}{alternate['event']}"
+            return {'transcript': tx, 'event': event}
         
         elif not within_tx_intron_start.empty and within_tx_intron_end.empty:
             print("only start is within intron")
