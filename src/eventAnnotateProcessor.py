@@ -344,3 +344,386 @@ class EventAnnotate:
             
             else:
                 return {'transcript': "unknown", 'event': f"unknown junction"}
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def reference_match(self, start_end, alternative = False, base = 1):
+        if start_end not in ['start', 'end']:
+            raise ValueError("Invalid start_end choice. Please select either 'start' or 'end'.")
+        
+        if start_end == "start":
+            query = self.coordinates[start_end] - base
+        elif start_end == "end":
+            query = self.coordinates[start_end]
+        
+        chrom = self.coordinates['chrom']
+        
+        matching_rows = self.annotation[
+            (self.annotation[start_end] == query) &
+            (self.annotation['chrom'] == chrom)
+        ]
+        
+        matching_rows['start'] = matching_rows['start'] + base
+        match = pd.DataFrame(matching_rows)
+        return(match)
+    
+
+
+    def _produce_annotation(self, annotation):
+        event = annotation['event']
+        cryptic = annotation['cryptic']
+        supplementary_event = annotation['supplementary_event']
+        location = annotation['location']
+        distance = annotation['distance']
+        direction = annotation['direction']
+
+        return{f"{cryptic}{supplementary_event}{location}{event}{direction}{distance}"}
+
+
+
+    def fetch_transcript_annotations(self, start_matches, end_matches):
+        transcript = self.coordinates['transcript']
+
+        start_matches = start_matches['transcript' == transcript]
+        end_matches = end_matches['transcript' == transcript]
+
+        print(f"matching starts are \n{start_matches}")
+        print(f"matching ends are \n{end_matches}")
+
+        if end_matches.empty and start_matches.empty:
+            print("no start or end matches for transcript")
+            return self._annotate_unannotated()
+        
+        elif start_matches.empty or end_matches.empty:
+            if end_matches.empty:
+                print("start matches")
+                return self._annotate_cryptic('start', self.coordinates['end'], start_matches)
+            
+            elif start_matches.empty:
+                print("end matches")
+                return self._annotate_cryptic('end', self.coordinates['start'], end_matches)
+
+        else:
+            if self.coordinates['type'] == "ir":
+                print("splicing type is intron retention")
+                return self._annotate_intron_retention()
+            
+            elif start_matches['intron'].unique() == end_matches['intron'].unique():
+                print("start and end introns are the same")
+                return self._annotate_canonical()
+            
+            elif start_matches['intron'].unique() == end_matches['intron'].unique():
+                print("start and end introns are different")
+                return self._annotate_exon_skipping()
+            
+            return({'transcript': "unknown", 'event': "unknown event"})
+
+    def _is_alternate_splicing(self, start_matches, end_matches):
+        transcript = self.coordinates['transcript']
+        start_matches = start_matches['transcript' != transcript]
+        end_matches = end_matches['transcript' != transcript]
+
+        alternate_start_matches = start_matches.sort_values(by='transcript')
+        alternate_end_matches = end_matches.sort_values(by='transcript')
+
+        print(f"matching alternate starts are \n{alternate_start_matches}")
+        print(f"matching alternate ends are \n{alternate_end_matches}")
+
+        if alternate_start_matches.empty or alternate_end_matches.empty:
+            return {'alternate': "", 'event': ""}
+        else:
+            unique_start_transcripts = alternate_start_matches['transcript'].unique()
+            unique_end_transcripts = alternate_end_matches['transcript'].unique()
+
+            transcripts = set(unique_start_transcripts) & set(unique_end_transcripts)
+
+            intron_match_transcripts = []
+
+            for transcript in transcripts:
+                start_intron = alternate_start_matches[alternate_start_matches['transcript'] == transcript]['intron'].iloc[0]
+                end_intron = alternate_end_matches[alternate_end_matches['transcript'] == transcript]['intron'].iloc[0]
+                if start_intron == end_intron:
+                    intron_match_transcripts.append(transcript)
+
+            transcripts = intron_match_transcripts
+
+            start_intron = alternate_start_matches['intron'].iloc[0]
+            end_intron = alternate_end_matches['intron'].iloc[0]
+            start_tx = alternate_start_matches['transcript'].iloc[0]
+            if self.coordinates['type'] == "ir":
+                return {"no current support for alternate intron retention"}
+            elif start_intron == end_intron:
+                if len(transcripts) > 1:
+                    print("all alternate start and end match transcripts match each other")
+                    print(f"Number of unique start matches: {len(unique_start_transcripts)}")
+                    print(f"Number of unique end matches: {len(unique_end_transcripts)}")
+                    print(unique_start_transcripts)
+                    #transcripts = set(unique_start_transcripts) & set(unique_end_transcripts)
+                    print(transcripts)
+                    transcripts_str = ', '.join(sorted(transcripts))
+                    event = f"{transcripts_str}"
+                    return {'alternate': 'alternate ', 'event': f" ({event})"}
+                else:
+                    event = f"exon {start_intron}-{end_intron+1}"
+                    return {'alternate': 'alternate ', 'event': f" ({transcripts[0]} {event})"}
+            else:
+                return {'alternate': "", 'event': ""}
+
+    def _annotate_cryptic(self, start_end, position, matches):
+        #Set cryptic to cryptic
+        cryptic = "cryptic "
+        print("identified a cryptic")
+
+        #Set event to acceptor/donor and calculate distance, based on strand
+        strand = self.coordinates['strand']
+        start = self.coordinates['start']
+        end = self.coordinates['end']
+        
+        if start_end == "start":
+            if strand == "+":
+                event = "donor"
+                distance = start - matches['start'].unique()
+            elif strand == "-":
+                event = "acceptor"
+                distance = matches['start'].unique() - start
+        elif start_end == "end":
+            if strand == "+":
+                event = "acceptor"
+                distance = end - matches['end'].unique()
+            elif strand == "-":
+                event = "donor"
+                distance = matches['end'].unique() - end
+        print(event)
+
+        #Set direction        
+        direction = "+" if distance > 0 else ""
+
+        #Set location based on within_tx_intron and within_tx_exon
+        transcript = self.coordinates['transcript']
+
+        within_tx_intron = self.annotation[(self.annotation['transcript'] == transcript) &
+                        (self.annotation['start'] <= position) &
+                        (self.annotation['end'] >= position)
+        ]
+        
+        if not within_tx_intron.empty:
+            print("located within an intron")
+
+            intron_1 = within_tx_intron['intron'].unique()
+            intron_2 = matches['intron'].unique()
+
+            if intron_1 != intron_2:
+                print("but event spans multiple introns")
+                supp_event = self._annotate_supplementary()
+            else:
+                supp_event = ""    
+            
+            location = "intronic "
+            alternate = self._is_alternate()
+
+            return {'supp_event': supp_event, 'location': location, 'alternate': alternate}
+            
+        else:
+            within_tx_exon = self.exons[(self.exons['transcript'] == transcript) &
+                            (self.exons['start'] <= position) &
+                            (self.exons['end'] >= position)
+            ]
+            if not within_tx_exon.empty:
+                print("located within an exon")
+
+                exon = within_tx_exon['exon'].unique()
+                intron = matches['intron'].unique()
+
+                if exon != intron and exon != intron+1 :
+                    print("but event spans multiple introns")
+                    supp_event = self._annotate_supplementary()
+                else:
+                    supp_event = ""   
+                
+                location = "exonic "
+                alternate = self._is_alternate()
+
+                return {'supp_event': supp_event, 'location': location, 'alternate': alternate}
+        
+            else:
+                print("located outside of transcript boundaries")
+                location = "intergenic "
+                alternate = self._is_alternate()
+
+                return {'supp_event': supp_event, 'location': location, 'alternate': alternate}
+            
+    def _annotate_unannotated(self):
+
+        within_tx_intron_start = self.annotation[
+            (self.annotation['chrom'] == self.coordinates['chrom']) &
+            (self.annotation['start'] <= self.coordinates['start']) &
+            (self.annotation['transcript'] == self.coordinates['transcript']) &
+            (self.annotation['end'] >= self.coordinates['start'])
+        ]
+        
+        within_tx_intron_end = self.annotation[
+            (self.annotation['chrom'] == self.coordinates['chrom']) &
+            (self.annotation['start'] <= self.coordinates['end']) &
+            (self.annotation['transcript'] == self.coordinates['transcript']) &
+            (self.annotation['end'] >= self.coordinates['end'])
+        ]
+        
+        if not within_tx_intron_start.empty and not within_tx_intron_end.empty:
+            print("both start and end are within introns")
+            tx = within_tx_intron_start['transcript'].iloc[0]
+            strand_check = within_tx_intron_start['strand'].iloc[0] == self.coordinates['strand']
+            strand_in = " (opposite strand)" if not strand_check else ""
+            location = "intronic junction"
+            alternate = self._is_alternate()
+            unannotated = "unannotated " if alternate['alternate'] == "" else ""
+            event = f"{alternate['alternate']}{unannotated}{location}{strand_in}{alternate['event']}"
+            return {'transcript': tx, 'event': event}
+        
+        elif not within_tx_intron_start.empty and within_tx_intron_end.empty:
+            print("only start is within intron")
+            tx = within_tx_intron_start['transcript'].iloc[0]
+            strand_check = within_tx_intron_start['strand'].iloc[0] == self.coordinates['strand']
+            strand_in = " (opposite strand)" if not strand_check else ""
+            print(tx)
+            within_tx_exon = self.exons[
+                (self.exons['transcript'] == tx) &
+                (self.exons['start'] <= self.coordinates['end']) &
+                (self.exons['end'] >= self.coordinates['end'])
+            ]
+            print(within_tx_exon)
+            if not within_tx_exon.empty:
+                return {'transcript': tx, 'event': f"unannotated intronic/exonic junction{strand_in}"}
+            else:
+                return {'transcript': tx, 'event': f"unknown intergenic/intronic junction{strand_in}"}
+        
+        elif within_tx_intron_start.empty and not within_tx_intron_end.empty:
+            print("only end is within intron")
+            tx = within_tx_intron_end['transcript'].iloc[0]
+            strand_check = within_tx_intron_end['strand'].iloc[0] == self.coordinates['strand']
+            strand_in = " (opposite strand)" if not strand_check else ""    
+            
+                        
+            within_tx_exon = self.exons[
+                (self.exons['transcript'] == tx) &
+                (self.exons['start'] <= self.coordinates['start']) &
+                (self.exons['end'] >= self.coordinates['start'])
+            ]
+            
+            if not within_tx_exon.empty:
+                return {'transcript': tx, 'event': f"unannotated intronic/exonic junction{strand_in}"}
+            else:
+                return {'transcript': tx, 'event': f"unknown intergenic/intronic junction{strand_in}"}
+            
+        else:
+            within_tx_exon_start = self.exons[
+                (self.exons['chr'] == self.coordinates['chrom']) &
+                (self.exons['start'] <= self.coordinates['start']) &
+                (self.exons['transcript'] == self.coordinates['transcript']) &
+                (self.exons['end'] >= self.coordinates['start'])
+            ]
+
+            within_tx_exon_end = self.exons[
+                (self.exons['chr'] == self.coordinates['chrom']) &
+                (self.exons['start'] <= self.coordinates['end']) &
+                (self.exons['transcript'] == self.coordinates['transcript']) &
+                (self.exons['end'] >= self.coordinates['end'])
+            ]
+            
+            if not within_tx_exon_start.empty and not within_tx_exon_end.empty:
+                print("both start and end are within exons")
+                tx = within_tx_exon_start['transcript'].iloc[0]
+                strand_check = within_tx_exon_start['strand'].iloc[0] == self.coordinates['strand']
+                strand_in = " (opposite strand)" if not strand_check else ""
+                return {'transcript': tx, 'event': f"unannotated exonic junction{strand_in}"}
+        
+            elif not within_tx_exon_start.empty and within_tx_exon_end.empty:
+                print("only start is within exon")
+                tx = within_tx_exon_start['transcript'].iloc[0]
+                strand_check = within_tx_exon_start['strand'].iloc[0] == self.coordinates['strand']
+                strand_in = " (opposite strand)" if not strand_check else ""
+                return {'transcript': tx, 'event': f"unknown intergenic/exonic junction{strand_in}"}
+
+            elif within_tx_exon_start.empty and not within_tx_exon_end.empty:
+                print("only end is within exon")
+                tx = within_tx_exon_end['transcript'].iloc[0]
+                strand_check = within_tx_exon_end['strand'].iloc[0] == self.coordinates['strand']
+                strand_in = " (opposite strand)" if not strand_check else ""    
+                return {'transcript': tx, 'event': f"unknown intergenic/exonic junction{strand_in}"}
+            
+            else:
+                return {'transcript': "unknown", 'event': f"unknown junction"}
+            
+
+    def _annotate_intron_retention(self, start_intron, start_tx):
+        event = f"intron {start_intron} retention"
+        return {'transcript': start_tx, 'event': event}
+
+
+
+    def _annotate_canonical(self, start_intron, start_tx, end_intron):
+        cryptic = "canonical "
+        event = f"canonical exon {start_intron}-{end_intron+1} splicing"
+        return {'transcript': start_tx, 'event': event}
+
+
+
+    def _annotate_exon_skipping(self, start_intron, start_tx, introns):
+        cryptic = ""
+        event = f"exon {'-'.join(str(i) for i in range(min(introns)+1, max(introns)+1))} skipping"
+        alternate = self._is_alternate()
+        event = f"{alternate['alternate']}{event}{alternate['event']}"
+        return {'transcript': start_tx, 'event': event}
+    
+
+    def _annotate_supplementary(self, start_intron, start_tx, matches, within_tx_intron, start_end, exon, intron, within_tx_exon):
+        print("multiple introns involved")
+        start_intron = int(matches['intron'].iloc[0])
+        end_intron = int(within_tx_intron['intron'].iloc[0])
+        introns = [start_intron, end_intron]
+        supp_event = f"exon {'-'.join(str(i) for i in range(min(introns)+1, max(introns)+1))} skipping/"
+        print(f"the second event is {supp_event}")
+        distance = start_end - within_tx_intron['end'].iloc[0]
+        direction = "+" if distance > 0 else ""
+        introns = [exon, intron]
+        supp_event = f"exon {'-'.join(str(i) for i in range(min(introns)+1, max(introns)+1))} skipping/"
+        print(f"the second event is {supp_event}")
+        distance = start_end - within_tx_exon['end'].iloc[0] - 1
+        direction = "+" if distance > 0 else ""
