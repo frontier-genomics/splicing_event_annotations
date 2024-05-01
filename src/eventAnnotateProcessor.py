@@ -636,14 +636,14 @@ class EventAnnotate:
                 if exon != intron and exon != intron+1 :
                     print("but event spans multiple introns")
                     supp_event = self._annotate_supplementary(exon, intron)
-                    position = within_tx_exon['start'].unique()[0] if start_end == "start" else within_tx_exon['end'].unique()[0]
+                    position = within_tx_exon['start'].unique()[0] if start_end == "end" else within_tx_exon['end'].unique()[0]
                 else:
                     supp_event = ""   
 
                 if start_end == "start":
                     if strand == "+":
                         event = "donor"
-                        distance = start - position
+                        distance = start - position - 1
                     elif strand == "-":
                         event = "acceptor"
                         distance = position - start
