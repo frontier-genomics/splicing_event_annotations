@@ -557,7 +557,7 @@ class EventAnnotate:
             else:
                 return {'alternate': '', 'alternate_event': ""}
 
-    def _annotate_cryptic(self, start_end, position, matches):
+    def _annotate_cryptic(self, start_end, var_position, matches):
         #Set cryptic to cryptic
         cryptic = "cryptic "
         print("identified a cryptic")
@@ -571,8 +571,8 @@ class EventAnnotate:
         transcript = self.coordinates['transcript']
 
         within_tx_intron = self.annotation[(self.annotation['transcript'] == transcript) &
-                        (self.annotation['start'] <= position) &
-                        (self.annotation['end'] >= position)
+                        (self.annotation['start'] <= var_position) &
+                        (self.annotation['end'] >= var_position)
         ]
         if start_end == "start":
             position = matches['start'].unique()[0] 
@@ -623,8 +623,8 @@ class EventAnnotate:
             
         else:
             within_tx_exon = self.exons[(self.exons['transcript'] == transcript) &
-                            (self.exons['start'] <= position) &
-                            (self.exons['end'] >= position)
+                            (self.exons['start'] <= var_position) &
+                            (self.exons['end'] >= var_position)
             ]
 
             if not within_tx_exon.empty:
