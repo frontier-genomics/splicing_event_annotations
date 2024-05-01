@@ -78,7 +78,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 			| chr9  | 34646787 | 34647088 | +      | ir   | NM_000155.4    | intron 1 retention  | 1      |         |
 			| chrX  | 40054043 | 40054255 | -      | ir   | NM_001123385.2 | intron 13 retention | 13     |         |
 
-	
+
 	Scenario Outline: Cryptic Acceptors
 		Given a cryptic acceptor event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
 		And the annotation dataset to be used for annotating cryptic acceptors is refseq_curated
@@ -94,7 +94,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 			| chrX  | 41144627 | 41148373 | +      | sj   | NM_001039591.3 | cryptic exonic acceptor @ +5      |        | exonic   |
 			| chrX  | 41223403 | 41224806 | +      | sj   | NM_001039591.3 | cryptic exonic acceptor @ +65     |        | exonic   |
 
-	
+
 	Scenario Outline: Cryptic Donors
 		Given a cryptic donor event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
 		And the annotation dataset to be used for annotating cryptic donors is refseq_curated
@@ -110,7 +110,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 			| chrX  | 41144347 | 41144521 | +      | sj   | NM_001039591.3 | cryptic intronic donor @ +904   |        | intronic                                                                                                                   |
 			| chrX  | 41216059 | 41217219 | +      | sj   | NM_001039591.3 | cryptic exonic donor @ -594     |        | exonic                                                                                                                     |
 
-	
+
 	Scenario Outline: Skip-Cryp Events
 		Given a skip-cryp event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
 		And the annotation dataset to be used for annotating skip-cryps is refseq_curated
@@ -124,7 +124,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 			| chr9  | 34647259 | 34648047 | +      | sj   | NM_000155.4    | exon 3-4-5 skipping/cryptic intronic acceptor @ -68 | 2      | triple skipping/cryptic intronic acceptor |
 			| chrX  | 41198618 | 41205302 | +      | sj   | NM_001039591.3 | exon 31 skipping/cryptic exonic donor @ -133        |        | single skipping/cryptic exonic donor      |
 
-	
+
 	Scenario Outline: Unannotated Junctions
 		Given an unannotated junction with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
 		And the annotation dataset to be used for annotating unannotated junctions is refseq_curated
@@ -139,8 +139,8 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 			| chrX  | 41229636 | 41230503 | +      | sj   | NM_001039591.3 | unannotated exonic junction                              |        | exonic                                                              |
 			| chrX  | 40096604 | 40097680 | +      | sj   | NM_001123385.2 | unannotated intronic/exonic junction (opposite strand)   | 1      | intronic/exonic; opposite strand                                    |
 			| chrX  | 40097722 | 40098095 | +      | sj   | NM_001123385.2 | unannotated intergenic/exonic junction (opposite strand) | NA     | intergenic/exonic; opposite strand                                  |
-			| chrX  | 40113978 | 40208244 | -      | sj   | NM_001123385.2 | unannotated unknown junction                             | NA     | unknown; within alternate intron 1 - & intergenic (mis-map warning) |
-			| chrX  | 40115468 | 40117489 | +      | sj   | NM_001123385.2 | unannotated unknown junction (opposite strand)           | NA     | unknown; within alternate intron 1 - (genuine splicing?)            |
+			| chrX  | 40113978 | 40208244 | -      | sj   | NM_001123385.2 | unannotated intergenic junction                             | NA     | unknown; within alternate intron 1 - & intergenic (mis-map warning) |
+			| chrX  | 40115468 | 40117489 | +      | sj   | NM_001123385.2 | unannotated intergenic junction                             | NA     | unknown; within alternate intron 1 - (genuine splicing?)            |
 
 
 	Scenario Outline: Annotate events using RefSeq MANE

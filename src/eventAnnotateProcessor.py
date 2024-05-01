@@ -827,7 +827,7 @@ class EventAnnotate:
                 return {'event': "junction",
                     'cryptic': "unannotated ",
                     'supplementary_event': "",
-                    'location': "unknown ",
+                    'location': "intergenic ",
                     'distance': "",
                     'direction': "",
                     'alternate': ""}
