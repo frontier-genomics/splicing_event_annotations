@@ -33,6 +33,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 
 		Examples:
 			| chrom | start    | end      | strand | type | transcript     | event                                                                | intron | comment                                            |
+			| chrX  | 53235185 | 53236321 | -      | sj   | NM_001111125.3 | alternate exon 14 skipping (NM_001410736.1, NM_015075.2)             |        | single exon skipping; 2 alt transcripts            |
 			| chrX  | 13749534 | 13753367 | +      | sj   | NM_003611.3    | alternate exon 10 skipping (NM_001330209.2 exon 9-10)                |        | single exon skipping; 1 alt transcript             |
 			| chrX  | 13749534 | 13753367 | +      | sj   | NM_001330210.2 | alternate exon 11 skipping (NM_001330209.2 exon 9-10)                |        | single exon skipping; 1 alt transcript             |
 			| chr9  | 34647259 | 34647831 | +      | sj   | NM_000155.4    | alternate exon 3-4 skipping (NM_001258332.2 exon 2-3)                | 2      | double exon skipping; 1 alt transcript             |
@@ -61,11 +62,13 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 		Then the resulting annotations of exon skipping should be event <event>
 
 		Examples:
-			| chrom | start    | end      | strand | type | transcript     | event               | intron     | comment |
-			| chrX  | 40057322 | 40062745 | -      | sj   | NM_001123385.2 | exon 10 skipping    | 9, 10      | single  |
-			| chrX  | 41134838 | 41140655 | +      | sj   | NM_001039591.3 | exon 6 skipping     | 5, 6       | single  |
-			| chrX  | 41153082 | 41167481 | +      | sj   | NM_001039591.3 | exon 15-16 skipping | 14, 15, 16 | double  |
-			| chr9  | 34647259 | 34648114 | +      | sj   | NM_000155.4    | exon 3-4-5 skipping | 2, 3, 4, 5 | triple  |
+			| chrom | start    | end      | strand | type | transcript     | event                 | intron        | comment |
+			| chrX  | 40057322 | 40062745 | -      | sj   | NM_001123385.2 | exon 10 skipping      | 9, 10         | single  |
+			| chrX  | 41134838 | 41140655 | +      | sj   | NM_001039591.3 | exon 6 skipping       | 5, 6          | single  |
+			| chrX  | 41153082 | 41167481 | +      | sj   | NM_001039591.3 | exon 15-16 skipping   | 14, 15, 16    | double  |
+			| chrX  | 53238307 | 53243331 | -      | sj   | NM_001111125.3 | exon 10-11 skipping   | 10, 11, 12    | double  |
+			| chr9  | 34647259 | 34648114 | +      | sj   | NM_000155.4    | exon 3-4-5 skipping   | 2, 3, 4, 5    | triple  |
+			| chrX  | 53238307 | 53246968 | -      | sj   | NM_001111125.3 | exon 9-10-11 skipping | 9, 10, 11, 12 | triple  |
 
 
 	Scenario Outline: Intron Retention
@@ -78,7 +81,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 			| chrom | start    | end      | strand | type | transcript     | event               | intron | comment |
 			| chr9  | 34646787 | 34647088 | +      | ir   | NM_000155.4    | intron 1 retention  | 1      |         |
 			| chrX  | 40054043 | 40054255 | -      | ir   | NM_001123385.2 | intron 13 retention | 13     |         |
-
+			
 
 	Scenario Outline: Cryptic Acceptors
 		Given a cryptic acceptor event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
@@ -95,7 +98,6 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 			| chrX  | 41144627 | 41148373 | +      | sj   | NM_001039591.3 | cryptic exon 12 acceptor @ +5      | 11     | exonic   |
 			| chrX  | 41223403 | 41224806 | +      | sj   | NM_001039591.3 | cryptic exon 40 acceptor @ +65     | 39     | exonic   |
 
-	# event_type | region type | region number | distance_from_annotated
 
 	Scenario Outline: Cryptic Donors
 		Given a cryptic donor event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
@@ -112,6 +114,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 			| chrX  | 41216059 | 41217219 | +      | sj   | NM_001039591.3 | cryptic exon 35 donor @ -594    | 35     | exonic; it's definitely -594, I don't know why it fails                                                                    |
 			| chrX  | 41217284 | 41218371 | +      | sj   | NM_001039591.3 | cryptic exon 36 donor @ -60     | 36     | exonic                                                                                                                     |
 
+
 	Scenario Outline: Skip-Cryp Events
 		Given a skip-cryp event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
 		And the annotation dataset to be used for annotating skip-cryps is refseq_curated
@@ -124,6 +127,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 			| chr9  | 34647259 | 34648091 | +      | sj   | NM_000155.4    | exon 3-4-5 skipping/cryptic intron 5 acceptor @ -24 | 2, 3, 4, 5 | triple skipping/cryptic intronic acceptor |
 			| chr9  | 34647259 | 34648047 | +      | sj   | NM_000155.4    | exon 3-4-5 skipping/cryptic intron 5 acceptor @ -68 | 2, 3, 4, 5 | triple skipping/cryptic intronic acceptor |
 			| chrX  | 41198618 | 41205302 | +      | sj   | NM_001039591.3 | exon 31 skipping/cryptic exon 30 donor @ -133       | 30, 31     | single skipping/cryptic exonic donor      |
+			| chrX  | 53235185 | 53236474 | -      | sj   | NM_001111125.3 | exon 14 skipping/cryptic exon 13 donor @ -153       | 13, 14     | single skipping/cryptic exonic donor      |
 
 
 	Scenario Outline: Unannotated Junctions
