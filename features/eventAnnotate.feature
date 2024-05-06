@@ -109,8 +109,8 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 			| chrX  | 41114762 | 41123470 | +      | sj   | NM_001039591.3 | cryptic intron 1 donor @ +28653 | 1      | intronic                                                                                                                   |
 			| chrX  | 41141436 | 41143290 | +      | sj   | NM_001039591.3 | cryptic intron 9 donor @ +5     | 9      | intronic; super interesting, uses an AT acceptor at -4 but soft clipped to +4 donor position, not a canonical donor site 1 |
 			| chrX  | 41144347 | 41144521 | +      | sj   | NM_001039591.3 | cryptic intron 10 donor @ +904  | 10     | intronic                                                                                                                   |
-			| chrX  | 41216059 | 41217219 | +      | sj   | NM_001039591.3 | cryptic exon 35 donor @ -594    | 35     | exonic; it's definitely -594, I don't know why it fails                                                                                                                     |
-
+			| chrX  | 41216059 | 41217219 | +      | sj   | NM_001039591.3 | cryptic exon 35 donor @ -594    | 35     | exonic; it's definitely -594, I don't know why it fails                                                                    |
+			| chrX  | 41217284 | 41218371 | +      | sj   | NM_001039591.3 | cryptic exon 36 donor @ -60     | 36     | exonic                                                                                                                     |
 
 	Scenario Outline: Skip-Cryp Events
 		Given a skip-cryp event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
