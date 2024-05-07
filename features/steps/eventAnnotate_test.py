@@ -128,11 +128,17 @@ def step_impl(context):
     context.create_annotations = context.annotation.fetch_transcript_annotations(context.start, context.end)
     
 
-@then(u'the resulting annotations of canonical splicing should be event {event}')
-def step_impl(context, event):
-    print(str(context.create_annotations))
+@then(u'the resulting annotations of canonical splicing should be event {event} of type {event_type} at intron {intron}')
+def step_impl(context, event, event_type, intron):
+    print(str(context.create_annotations['event']))
     print(event)
-    assert str(context.create_annotations) == event, f"Expected event: {event}, but got: {str(context.create_annotations)}"
+    print(str(context.create_annotations['event_type']))
+    print(event_type)
+    print(str(context.create_annotations['introns']))
+    print(intron)
+    assert str(context.create_annotations['event']) == event, f"Expected event: {event}, but got: {str(context.create_annotations['event'])}"
+    assert str(context.create_annotations['event_type']) == event_type, f"Expected event: {event_type}, but got: {str(context.create_annotations['event_type'])}"
+    assert str(context.create_annotations['introns']) == intron, f"Expected event: {intron}, but got: {str(context.create_annotations['intron'])}"
 
 
 

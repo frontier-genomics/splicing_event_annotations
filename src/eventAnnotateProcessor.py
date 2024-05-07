@@ -83,6 +83,7 @@ class EventAnnotate:
                 "warning": warning}
 
 
+
     def reference_match(self, start_end, base=1):
         """
         Finds a reference match for the given start_end position.
@@ -135,8 +136,9 @@ class EventAnnotate:
         location = annotation['location']
         distance = annotation['distance']
         direction = annotation['direction']
+        introns = annotation['introns']
 
-        if cryptic not in ['canonical ', 'intron ']:  # Replace 'event1', 'event2', 'event3' with the actual events
+        if cryptic not in ['canonical ', 'intron ']:
             alternate = self._is_alternate_splicing(start_matches, end_matches)['alternate']
             alternate_event = self._is_alternate_splicing(start_matches, end_matches)['alternate_event']
             if alternate == "alternate ":
@@ -154,7 +156,12 @@ class EventAnnotate:
         print(alternate)
         print(alternate_event)
 
-        return f"{alternate}{supplementary_event}{cryptic}{location}{event}{direction}{distance}{alternate_event}"
+        if cryptic == "canonical ":
+            event_type = "canonical"
+
+        return {'event': f"{alternate}{supplementary_event}{cryptic}{location}{event}{direction}{distance}{alternate_event}",
+                'event_type': event_type,
+                'introns': introns}
 
 
 
@@ -245,7 +252,6 @@ class EventAnnotate:
                     print(f"Number of unique start matches: {len(unique_start_transcripts)}")
                     print(f"Number of unique end matches: {len(unique_end_transcripts)}")
                     print(unique_start_transcripts)
-                    #transcripts = set(unique_start_transcripts) & set(unique_end_transcripts)
                     print(transcripts)
                     transcripts_str = ', '.join(sorted(transcripts))
                     return {'alternate': 'alternate ', 'cryptic': '', 'alternate_event': f" ({transcripts_str})"}
@@ -585,7 +591,8 @@ class EventAnnotate:
                 'location': "",
                 'distance': "",
                 'direction': "",
-                'alternate': ""}
+                'alternate': "",
+                'introns': intron}
 
     def _annotate_exon_skipping(self, start_intron, end_intron):
         introns = [start_intron[0], end_intron[0]]
