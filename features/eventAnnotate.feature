@@ -2,7 +2,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 
 	Scenario Outline: Canonical Splicing
 		Given a canonical splicing event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
-		And the annotation dataset to be used for annotating canonical splicing is refseq_curated
+		And the annotation dataset to be used for annotating canonical splicing is refseq
 		When the canonical splicing events are annotated with the annotation dataset
 		Then the resulting annotations of canonical splicing should be event <event>
 
@@ -27,7 +27,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 
 	Scenario Outline: Alternate Splicing
 		Given an alternate splicing event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
-		And the annotation dataset to be used for annotating alternate splicing is refseq_curated
+		And the annotation dataset to be used for annotating alternate splicing is refseq
 		When the alternate splicing events are annotated with the annotation dataset
 		Then the resulting annotations of alternate splicing should be event <event>
 
@@ -57,7 +57,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 
 	Scenario Outline: Exon Skipping
 		Given an exon skipping event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
-		And the annotation dataset to be used for annotating exon skipping is refseq_curated
+		And the annotation dataset to be used for annotating exon skipping is refseq
 		When the exon skipping events are annotated with the annotation dataset
 		Then the resulting annotations of exon skipping should be event <event>
 
@@ -73,7 +73,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 
 	Scenario Outline: Intron Retention
 		Given an intron retention event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
-		And the annotation dataset to be used for annotating intron retention is refseq_curated
+		And the annotation dataset to be used for annotating intron retention is refseq
 		When the intron retention events are annotated with the annotation dataset
 		Then the resulting annotations of intron retention should be event <event>
 
@@ -85,7 +85,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 
 	Scenario Outline: Cryptic Acceptors
 		Given a cryptic acceptor event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
-		And the annotation dataset to be used for annotating cryptic acceptors is refseq_curated
+		And the annotation dataset to be used for annotating cryptic acceptors is refseq
 		When the cryptic acceptor events are annotated with the annotation dataset
 		Then the resulting annotations of cryptic acceptors should be event <event>
 
@@ -103,7 +103,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 
 	Scenario Outline: Cryptic Donors
 		Given a cryptic donor event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
-		And the annotation dataset to be used for annotating cryptic donors is refseq_curated
+		And the annotation dataset to be used for annotating cryptic donors is refseq
 		When the cryptic donor events are annotated with the annotation dataset
 		Then the resulting annotations of cryptic donors should be event <event>
 
@@ -120,7 +120,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 
 	Scenario Outline: Skip-Cryp Events
 		Given a skip-cryp event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
-		And the annotation dataset to be used for annotating skip-cryps is refseq_curated
+		And the annotation dataset to be used for annotating skip-cryps is refseq
 		When the skip-cryp events are annotated with the annotation dataset
 		Then the resulting annotations of skip-cryps should be event <event>
 
@@ -141,7 +141,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 
 	Scenario Outline: Unannotated Junctions
 		Given an unannotated junction with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
-		And the annotation dataset to be used for annotating unannotated junctions is refseq_curated
+		And the annotation dataset to be used for annotating unannotated junctions is refseq
 		When the unannotated junctions are annotated with the annotation dataset
 		Then the resulting annotations of unannotated junctions should be event <event>
 
