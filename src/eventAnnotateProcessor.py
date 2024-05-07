@@ -137,6 +137,7 @@ class EventAnnotate:
         distance = annotation['distance']
         direction = annotation['direction']
         introns = annotation['introns']
+        event_type = annotation['event_type']
 
         if cryptic not in ['canonical ', 'intron ']:
             alternate = self._is_alternate_splicing(start_matches, end_matches)['alternate']
@@ -156,13 +157,9 @@ class EventAnnotate:
         print(alternate)
         print(alternate_event)
 
-        if cryptic == "canonical ":
-            event_type = "canonical"
-
         return {'event': f"{alternate}{supplementary_event}{cryptic}{location}{event}{direction}{distance}{alternate_event}",
                 'event_type': event_type,
                 'introns': introns}
-
 
 
     def fetch_transcript_annotations(self, start_matches_all_tx, end_matches_all_tx):
@@ -584,6 +581,7 @@ class EventAnnotate:
         cryptic = "canonical "
         intron = start_intron[0]
         event = f"exon {intron}-{intron+1} splicing"
+        event_type = "canonical"
 
         return {'event': event,
                 'cryptic': cryptic,
@@ -592,11 +590,14 @@ class EventAnnotate:
                 'distance': "",
                 'direction': "",
                 'alternate': "",
+                'event_type': event_type,
                 'introns': intron}
 
     def _annotate_exon_skipping(self, start_intron, end_intron):
         introns = [start_intron[0], end_intron[0]]
         event = f"exon {'-'.join(str(i) for i in range(min(introns)+1, max(introns)+1))} skipping"
+        event_type = "exon skipping"
+        introns = f"{', '.join(str(i) for i in range(min(introns), max(introns)+1))}"
 
         
 
@@ -606,7 +607,9 @@ class EventAnnotate:
                 'location': "",
                 'distance': "",
                 'direction': "",
-                'alternate': ""}
+                'alternate': "",
+                'event_type': event_type,
+                'introns': introns}
     
     def _annotate_supplementary(self, introns):
         event = f"exon {'-'.join(str(i) for i in range(min(introns)+1, max(introns)+1))} skipping/"

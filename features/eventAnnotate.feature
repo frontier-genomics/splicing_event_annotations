@@ -59,16 +59,16 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 		Given an exon skipping event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
 		And the annotation dataset to be used for annotating exon skipping is refseq
 		When the exon skipping events are annotated with the annotation dataset
-		Then the resulting annotations of exon skipping should be event <event>
+		Then the resulting annotations of exon skipping should be event <event> of type <event_type> at intron <intron>
 
 		Examples:
-			| chrom | start    | end      | strand | type | transcript     | event_type    | event                 | intron        | comment |
-			| chrX  | 40057322 | 40062745 | -      | sj   | NM_001123385.2 | exon skipping | exon 10 skipping      | 9, 10         | single  |
-			| chrX  | 41134838 | 41140655 | +      | sj   | NM_001039591.3 | exon skipping | exon 6 skipping       | 5, 6          | single  |
-			| chrX  | 41153082 | 41167481 | +      | sj   | NM_001039591.3 | exon skipping | exon 15-16 skipping   | 14, 15, 16    | double  |
-			| chrX  | 53238307 | 53243331 | -      | sj   | NM_001111125.3 | exon skipping | exon 10-11 skipping   | 10, 11, 12    | double  |
-			| chr9  | 34647259 | 34648114 | +      | sj   | NM_000155.4    | exon skipping | exon 3-4-5 skipping   | 2, 3, 4, 5    | triple  |
-			| chrX  | 53238307 | 53246968 | -      | sj   | NM_001111125.3 | exon skipping | exon 9-10-11 skipping | 9, 10, 11, 12 | triple  |
+			| chrom | start    | end      | strand | type | transcript     | event_type    | event                 | intron       | comment |
+			| chrX  | 40057322 | 40062745 | -      | sj   | NM_001123385.2 | exon skipping | exon 10 skipping      | 9, 10        | single  |
+			| chrX  | 41134838 | 41140655 | +      | sj   | NM_001039591.3 | exon skipping | exon 6 skipping       | 5, 6         | single  |
+			| chrX  | 41153082 | 41167481 | +      | sj   | NM_001039591.3 | exon skipping | exon 15-16 skipping   | 14, 15, 16   | double  |
+			| chrX  | 53238307 | 53243331 | -      | sj   | NM_001111125.3 | exon skipping | exon 10-11 skipping   | 9, 10, 11    | double  |
+			| chr9  | 34647259 | 34648114 | +      | sj   | NM_000155.4    | exon skipping | exon 3-4-5 skipping   | 2, 3, 4, 5   | triple  |
+			| chrX  | 53238307 | 53246968 | -      | sj   | NM_001111125.3 | exon skipping | exon 9-10-11 skipping | 8, 9, 10, 11 | triple  |
 
 
 	Scenario Outline: Intron Retention
