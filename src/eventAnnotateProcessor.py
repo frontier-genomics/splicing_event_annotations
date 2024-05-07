@@ -44,6 +44,7 @@ class EventAnnotate:
         if matching_rows.empty:
             print("no MANE transcript match found")
             return {"transcript": "unknown",
+                    "gene": "unknown",
                     "warning": "no MANE transcript match found"}
         
         matching_rows['start'] = matching_rows['start'] + base
@@ -54,6 +55,7 @@ class EventAnnotate:
 
         if len(match['transcript'].unique()) == 1:
             transcript = match['transcript'].iloc[0]
+            gene = match['gene'].iloc[0]
 
             if match['strand'].unique()[0] == strand:
 
@@ -66,15 +68,19 @@ class EventAnnotate:
         elif len(match['transcript'].unique()) > 1:
             if sum(match['strand'] == strand) == 1:
                 transcript = match['transcript'].iloc[0]
+                gene = match['gene'].iloc[0]
                 warning = "Overlapping MANE transcript on opposite strand found."
             elif sum(match['strand'] == strand) != 1:
                 transcript = "unknown"
+                gene = "unknown"
                 warning = "Multiple overlapping MANE transcripts found. Unable to assign."
             elif sum(match['strand'] == strand) == 0:
                 transcript = "unknown"
+                gene = "unknown"
                 warning = "Multiple overlapping MANE transcripts found on opposite strand only. Unable to assign."
 
         return {"transcript": transcript,
+                "gene": gene,
                 "warning": warning}
 
 

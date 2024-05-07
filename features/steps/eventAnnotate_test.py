@@ -26,13 +26,16 @@ def step_impl(context):
     context.transcript = context.annotation.get_mane_transcript()
 
 
-@then(u'the result should be transcript {transcript} and warning {warning}')
-def step_impl(context, transcript, warning):
+@then(u'the result should be transcript {transcript}, gene {gene}, and warning {warning}')
+def step_impl(context, transcript, gene, warning):
     print(context.transcript['transcript'])
     print(transcript)
+    print(context.transcript['gene'])
+    print(gene)
     print(context.transcript['warning'])
     print(warning)
     assert context.transcript['transcript'] == transcript
+    assert context.transcript['gene'] == gene
     assert context.transcript['warning'] == warning
     
 
