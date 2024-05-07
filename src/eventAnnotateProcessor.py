@@ -43,24 +43,30 @@ class EventAnnotate:
 
         if matching_rows.empty:
             print("no MANE transcript match found")
-            return {"transcript": "unknown"}
+            return {"transcript": "unknown",
+                    "warning": "no MANE transcript match found"}
         
         matching_rows['start'] = matching_rows['start'] + base
         match = pd.DataFrame(matching_rows)
 
         print(match)
+        print(len(match['transcript'].unique()))
 
         if len(match['transcript'].unique()) == 1:
             transcript = match['transcript'].iloc[0]
-            if match['strand'].unique() == strand:
-                warning = ""
+
+            if match['strand'].unique()[0] == strand:
+
+                warning = "none"
             else:
+                print(match['strand'].unique()[0])
+                print(strand)
                 warning = "MANE transcript found on opposite strand only."
 
         elif len(match['transcript'].unique()) > 1:
             if sum(match['strand'] == strand) == 1:
                 transcript = match['transcript'].iloc[0]
-                warning = ""
+                warning = "Overlapping MANE transcript on opposite strand found."
             elif sum(match['strand'] == strand) != 1:
                 transcript = "unknown"
                 warning = "Multiple overlapping MANE transcripts found. Unable to assign."
