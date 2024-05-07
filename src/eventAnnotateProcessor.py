@@ -26,6 +26,52 @@ class EventAnnotate:
         
         self.annotation.columns = ['chrom', 'start', 'end', 'transcript', 'intron', 'strand']
 
+    def get_mane_transcript(self, base=1):
+        print(f"finding mane transcript match for event")
+        transcripts = pd.read_csv("resources/annotations/refseq_mane_gene_tx_names.tsv", sep='\t')
+
+        chrom = self.coordinates['chrom']
+        start = self.coordinates['start']
+        end = self.coordinates['start']
+        strand = self.coordinates['strand']
+
+        matching_rows = transcripts[
+            (transcripts['chrom'] == chrom) &
+            (transcripts['start'] <= start) &
+            (transcripts['end'] >= end)
+        ]
+
+        if matching_rows.empty:
+            print("no MANE transcript match found")
+            return {"transcript": "unknown"}
+        
+        matching_rows['start'] = matching_rows['start'] + base
+        match = pd.DataFrame(matching_rows)
+
+        print(match)
+
+        if len(match['transcript'].unique()) == 1:
+            transcript = match['transcript'].iloc[0]
+            if match['strand'].unique() == strand:
+                warning = ""
+            else:
+                warning = "MANE transcript found on opposite strand only."
+
+        elif len(match['transcript'].unique()) > 1:
+            if sum(match['strand'] == strand) == 1:
+                transcript = match['transcript'].iloc[0]
+                warning = ""
+            elif sum(match['strand'] == strand) != 1:
+                transcript = "unknown"
+                warning = "Multiple overlapping MANE transcripts found. Unable to assign."
+            elif sum(match['strand'] == strand) == 0:
+                transcript = "unknown"
+                warning = "Multiple overlapping MANE transcripts found on opposite strand only. Unable to assign."
+
+        return {"transcript": transcript,
+                "warning": warning}
+
+
     def reference_match(self, start_end, base=1):
         """
         Finds a reference match for the given start_end position.
@@ -56,13 +102,11 @@ class EventAnnotate:
             (self.annotation[start_end] == query) &
             (self.annotation['chrom'] == chrom)
         ]
-
+        
         matching_rows['start'] = matching_rows['start'] + base
         match = pd.DataFrame(matching_rows)
         return match
     
-
-
     def _produce_annotation(self, annotation, start_matches, end_matches):
         """
         Produces an annotation string based on the given annotation dictionary.
