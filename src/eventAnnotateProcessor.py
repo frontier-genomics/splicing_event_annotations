@@ -15,14 +15,13 @@ class EventAnnotate:
         self.annotation_choice = annotation_choice
 
     def get_annotations(self):
-        if self.annotation_choice == "refseq_mane":
-            self.annotation = pd.read_csv("resources/annotations/refseq_mane_introns_sorted.tsv", sep='\t')
-            self.exons = pd.read_csv("resources/annotations/refseq_mane_exons_sorted.tsv", sep='\t')
-        elif self.annotation_choice == "refseq_curated":
+        if self.annotation_choice == "refseq":
             self.annotation = pd.read_csv("resources/annotations/refseq_curated_introns_sorted.tsv", sep='\t')
             self.exons = pd.read_csv("resources/annotations/refseq_curated_exons_sorted.tsv", sep='\t')
+        elif self.annotation_choice == "ensembl":
+            raise ValueError("Ensembl annotations are currently not supported. Please try again with 'refseq'.")
         else:
-            raise ValueError("Invalid annotation choice. Please select either 'refseq_mane' or 'refseq_curated'.")
+            raise ValueError("Invalid annotation choice. Please select either 'refseq' or 'ensembl' (currently not supported).")
         
         self.annotation.columns = ['chrom', 'start', 'end', 'transcript', 'intron', 'strand']
 
