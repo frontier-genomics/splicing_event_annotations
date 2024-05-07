@@ -75,7 +75,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 		Given an intron retention event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
 		And the annotation dataset to be used for annotating intron retention is refseq
 		When the intron retention events are annotated with the annotation dataset
-		Then the resulting annotations of intron retention should be event <event>
+		Then the resulting annotations of intron retention should be event <event> of type <event_type> at intron <intron>
 
 		Examples:
 			| chrom | start    | end      | strand | type | transcript     | event_type       | event               | intron | comment |
@@ -87,7 +87,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 		Given a cryptic acceptor event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
 		And the annotation dataset to be used for annotating cryptic acceptors is refseq
 		When the cryptic acceptor events are annotated with the annotation dataset
-		Then the resulting annotations of cryptic acceptors should be event <event>
+		Then the resulting annotations of cryptic acceptors should be event <event> of location <location> and type <event_type> at intron <intron> at a distance of <distance_from_authentic>
 
 		Examples:
 			| chrom | start    | end      | strand | type | transcript     | event_type       | location | distance_from_authentic | event                              | intron | comment |
@@ -105,7 +105,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 		Given a cryptic donor event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
 		And the annotation dataset to be used for annotating cryptic donors is refseq
 		When the cryptic donor events are annotated with the annotation dataset
-		Then the resulting annotations of cryptic donors should be event <event>
+		Then the resulting annotations of cryptic donors should be event <event> of location <location> and type <event_type> at intron <intron> at a distance of <distance_from_authentic>
 
 		Examples:
 			| chrom | start    | end      | strand | type | transcript     | event_type    | location | distance_from_authentic | event                           | intron | comment                                                                                                          |

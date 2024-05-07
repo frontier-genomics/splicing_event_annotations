@@ -325,7 +325,9 @@ class EventAnnotate:
                     'location': location,
                     'distance': distance,
                     'direction': direction,
-                    'alternate': ""}
+                    'alternate': "",
+                    'event_type': f"{cryptic}{event}",
+                    'introns': introns[0]}
             
         else:
             within_tx_exon = self.exons[(self.exons['transcript'] == transcript) &
@@ -376,13 +378,18 @@ class EventAnnotate:
 
                 location = f"exon {int(introns[0])} "
 
+                if event == 'acceptor':
+                    introns[0] = introns[0] - 1
+
                 return {'event': event,
                         'cryptic': cryptic,
                         'supplementary_event': supp_event,
                         'location': location,
                         'distance': distance,
                         'direction': direction,
-                        'alternate': ""}
+                        'alternate': "",
+                        'event_type': f"{cryptic}{event}",
+                        'introns': introns[0]}
         
             else:
                 print("located outside of transcript boundaries")
@@ -568,14 +575,17 @@ class EventAnnotate:
         intron = start_intron[0]
         cryptic = "intron "
         event = f"{intron} retention"
-        
+        event_type = "intron retention"
+
         return {'event': event,
                 'cryptic': cryptic,
                 'supplementary_event': "",
                 'location': "",
                 'distance': "",
                 'direction': "",
-                'alternate': ""}
+                'alternate': "",
+                'event_type': event_type,
+                'introns': intron}
 
     def _annotate_canonical(self, start_intron):
         cryptic = "canonical "
