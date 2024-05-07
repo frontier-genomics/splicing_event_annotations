@@ -244,7 +244,7 @@ class EventAnnotate:
                 elif strand == "-":
                     event = "acceptor"
                     distance = position - start
-                    print(f"The calculation is {position} - {start} - 1 = {distance}")
+                    print(f"The calculation is {position} - {start} = {distance}")
             elif start_end == "end":
                 if strand == "+":
                     event = "acceptor"
@@ -252,8 +252,8 @@ class EventAnnotate:
                     print(f"The calculation is {end} - {position} - 1 = {distance}")
                 elif strand == "-":
                     event = "donor"
-                    distance = position - end
-                    print(f"The calculation is {position} - {end} = {distance}")
+                    distance = position - end + 1
+                    print(f"The calculation is {position} - {end} + 1 = {distance}")
             print(event)
 
             #Set direction        
@@ -282,12 +282,6 @@ class EventAnnotate:
 
                 introns = [int(within_tx_exon['exon'].unique()), int(matches['intron'].unique())]
 
-                if introns[0] != introns[1] and introns[0] != introns[1]+1 :
-                    print("but event spans multiple introns")
-                    supp_event = self._annotate_supplementary(introns)
-                else:
-                    supp_event = ""   
-
                 if start_end == "start":
                     if strand == "+":
                         event = "donor"
@@ -295,8 +289,8 @@ class EventAnnotate:
                         print(f"The calculation is {start} - {position} - 1 = {distance}")
                     elif strand == "-":
                         event = "acceptor"
-                        distance = position - start
-                        print(f"The calculation is {position} - {start} = {distance}")
+                        distance = position - start + 1
+                        print(f"The calculation is {position} - {start} + 1= {distance}")
                 elif start_end == "end":
                     if strand == "+":
                         event = "acceptor"
@@ -306,11 +300,22 @@ class EventAnnotate:
                         event = "donor"
                         distance = position - end
                         print(f"The calculation is {position} - {end} = {distance}")
+
                 print(event)
+
+                if introns[0] != introns[1] and introns[0] != introns[1]+1 :
+                    print("but event spans multiple introns")
+                    if event == 'acceptor':
+                        introns[0] = introns[0] - 1
+                    supp_event = self._annotate_supplementary(introns)
+                    if event == 'acceptor':
+                        introns[0] = introns[0] + 1
+                else:
+                    supp_event = ""   
 
                 #Set direction        
                 direction = " @ +" if distance > 0 else " @ "
-                
+
                 location = f"exon {int(introns[0])} "
 
                 return {'event': event,
