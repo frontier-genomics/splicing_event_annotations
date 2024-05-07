@@ -15,16 +15,73 @@ class EventAnnotate:
         self.annotation_choice = annotation_choice
 
     def get_annotations(self):
-        if self.annotation_choice == "refseq_mane":
-            self.annotation = pd.read_csv("resources/annotations/refseq_mane_introns_sorted.tsv", sep='\t')
-            self.exons = pd.read_csv("resources/annotations/refseq_mane_exons_sorted.tsv", sep='\t')
-        elif self.annotation_choice == "refseq_curated":
+        if self.annotation_choice == "refseq":
             self.annotation = pd.read_csv("resources/annotations/refseq_curated_introns_sorted.tsv", sep='\t')
             self.exons = pd.read_csv("resources/annotations/refseq_curated_exons_sorted.tsv", sep='\t')
+        elif self.annotation_choice == "ensembl":
+            raise ValueError("Ensembl annotations are currently not supported. Please try again with 'refseq'.")
         else:
-            raise ValueError("Invalid annotation choice. Please select either 'refseq_mane' or 'refseq_curated'.")
+            raise ValueError("Invalid annotation choice. Please select either 'refseq' or 'ensembl' (currently not supported).")
         
         self.annotation.columns = ['chrom', 'start', 'end', 'transcript', 'intron', 'strand']
+
+    def get_mane_transcript(self, base=1):
+        print(f"finding mane transcript match for event")
+        transcripts = pd.read_csv("resources/annotations/refseq_mane_gene_tx_names.tsv", sep='\t')
+
+        chrom = self.coordinates['chrom']
+        start = self.coordinates['start']
+        end = self.coordinates['start']
+        strand = self.coordinates['strand']
+
+        matching_rows = transcripts[
+            (transcripts['chrom'] == chrom) &
+            (transcripts['start'] <= start) &
+            (transcripts['end'] >= end)
+        ]
+
+        if matching_rows.empty:
+            print("no MANE transcript match found")
+            return {"transcript": "unknown",
+                    "gene": "unknown",
+                    "warning": "no MANE transcript match found"}
+        
+        matching_rows['start'] = matching_rows['start'] + base
+        match = pd.DataFrame(matching_rows)
+
+        print(match)
+        print(len(match['transcript'].unique()))
+
+        if len(match['transcript'].unique()) == 1:
+            transcript = match['transcript'].iloc[0]
+            gene = match['gene'].iloc[0]
+
+            if match['strand'].unique()[0] == strand:
+
+                warning = "none"
+            else:
+                print(match['strand'].unique()[0])
+                print(strand)
+                warning = "MANE transcript found on opposite strand only."
+
+        elif len(match['transcript'].unique()) > 1:
+            if sum(match['strand'] == strand) == 1:
+                transcript = match['transcript'].iloc[0]
+                gene = match['gene'].iloc[0]
+                warning = "Overlapping MANE transcript on opposite strand found."
+            elif sum(match['strand'] == strand) != 1:
+                transcript = "unknown"
+                gene = "unknown"
+                warning = "Multiple overlapping MANE transcripts found. Unable to assign."
+            elif sum(match['strand'] == strand) == 0:
+                transcript = "unknown"
+                gene = "unknown"
+                warning = "Multiple overlapping MANE transcripts found on opposite strand only. Unable to assign."
+
+        return {"transcript": transcript,
+                "gene": gene,
+                "warning": warning}
+
 
     def reference_match(self, start_end, base=1):
         """
@@ -56,13 +113,11 @@ class EventAnnotate:
             (self.annotation[start_end] == query) &
             (self.annotation['chrom'] == chrom)
         ]
-
+        
         matching_rows['start'] = matching_rows['start'] + base
         match = pd.DataFrame(matching_rows)
         return match
     
-
-
     def _produce_annotation(self, annotation, start_matches, end_matches):
         """
         Produces an annotation string based on the given annotation dictionary.
@@ -244,7 +299,7 @@ class EventAnnotate:
                 elif strand == "-":
                     event = "acceptor"
                     distance = position - start
-                    print(f"The calculation is {position} - {start} - 1 = {distance}")
+                    print(f"The calculation is {position} - {start} = {distance}")
             elif start_end == "end":
                 if strand == "+":
                     event = "acceptor"
@@ -252,8 +307,8 @@ class EventAnnotate:
                     print(f"The calculation is {end} - {position} - 1 = {distance}")
                 elif strand == "-":
                     event = "donor"
-                    distance = position - end
-                    print(f"The calculation is {position} - {end} = {distance}")
+                    distance = position - end + 1
+                    print(f"The calculation is {position} - {end} + 1 = {distance}")
             print(event)
 
             #Set direction        
@@ -282,12 +337,6 @@ class EventAnnotate:
 
                 introns = [int(within_tx_exon['exon'].unique()), int(matches['intron'].unique())]
 
-                if introns[0] != introns[1] and introns[0] != introns[1]+1 :
-                    print("but event spans multiple introns")
-                    supp_event = self._annotate_supplementary(introns)
-                else:
-                    supp_event = ""   
-
                 if start_end == "start":
                     if strand == "+":
                         event = "donor"
@@ -295,8 +344,8 @@ class EventAnnotate:
                         print(f"The calculation is {start} - {position} - 1 = {distance}")
                     elif strand == "-":
                         event = "acceptor"
-                        distance = position - start
-                        print(f"The calculation is {position} - {start} = {distance}")
+                        distance = position - start + 1
+                        print(f"The calculation is {position} - {start} + 1= {distance}")
                 elif start_end == "end":
                     if strand == "+":
                         event = "acceptor"
@@ -306,11 +355,22 @@ class EventAnnotate:
                         event = "donor"
                         distance = position - end
                         print(f"The calculation is {position} - {end} = {distance}")
+
                 print(event)
+
+                if introns[0] != introns[1] and introns[0] != introns[1]+1 :
+                    print("but event spans multiple introns")
+                    if event == 'acceptor':
+                        introns[0] = introns[0] - 1
+                    supp_event = self._annotate_supplementary(introns)
+                    if event == 'acceptor':
+                        introns[0] = introns[0] + 1
+                else:
+                    supp_event = ""   
 
                 #Set direction        
                 direction = " @ +" if distance > 0 else " @ "
-                
+
                 location = f"exon {int(introns[0])} "
 
                 return {'event': event,

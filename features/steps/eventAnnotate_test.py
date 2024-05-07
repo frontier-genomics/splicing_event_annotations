@@ -1,22 +1,18 @@
 from behave import given, when, then
 from src.eventAnnotateProcessor import EventAnnotate
 
-@given(u'a splicing event with chrom {chrom}, start {start}, end {end}, strand {strand}, transcript {transcript}, and type {type}')
-def step_impl(context, chrom, start, end, strand, transcript, type):
+@given(u'a splicing event with chrom {chrom}, start {start}, end {end}, and strand {strand}')
+def step_impl(context, chrom, start, end, strand):
     context.input = {
             'chrom': chrom,
             'start': start,
             'end': end,
             'strand': strand,
-            'transcript': transcript,
-            'type': type
+            'transcript': "",
+            'type': ""
         }
-    
-@given(u'the transcript annotation is {annotation}')
-def step_impl(context, annotation):
-    context.input['annotation'] = annotation
 
-@when(u'the splicing events are annotated')
+@when(u'the overlapping transcripts are fetched')
 def step_impl(context):
     context.annotation = EventAnnotate(
         chrom = context.input['chrom'],
@@ -25,28 +21,23 @@ def step_impl(context):
         strand = context.input['strand'],
         transcript = context.input['transcript'],
         type = context.input['type'],
-        annotation_choice = context.input['annotation']
+        annotation_choice=""
     )
-    context.annotation.get_annotations()
-    context.start = context.annotation.matcher('start')
-    context.end = context.annotation.matcher('end')
-    
-    print(context.input["start"])
-    print(context.input["end"])
-    print(context.start)
-    print(context.end)
-    
-    context.create_annotations = context.annotation.create_annotations(context.start, context.end)
-    
+    context.transcript = context.annotation.get_mane_transcript()
 
-@then(u'the result should be event {event} for transcript {transcript}')
-def step_impl(context, event, transcript):
-    print(context.create_annotations['event'])
-    print(context.create_annotations['transcript'])
-    print(event)
+
+@then(u'the result should be transcript {transcript}, gene {gene}, and warning {warning}')
+def step_impl(context, transcript, gene, warning):
+    print(context.transcript['transcript'])
     print(transcript)
-    assert context.create_annotations['event'] == event
-    assert context.create_annotations['transcript'] == transcript
+    print(context.transcript['gene'])
+    print(gene)
+    print(context.transcript['warning'])
+    print(warning)
+    assert context.transcript['transcript'] == transcript
+    assert context.transcript['gene'] == gene
+    assert context.transcript['warning'] == warning
+    
 
 
 
