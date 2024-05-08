@@ -21,7 +21,6 @@ def step_impl(context):
         strand = context.input['strand'],
         transcript = context.input['transcript'],
         type = context.input['type'],
-        annotation_choice=""
     )
     context.transcript = context.annotation.get_mane_transcript()
 
@@ -67,9 +66,8 @@ def step_impl(context):
         strand = context.input['strand'],
         transcript = context.input['transcript'],
         type = context.input['type'],
-        annotation_choice = context.input['annotation']
     )
-    context.annotation.get_annotations()
+    context.annotation.get_annotations(context.input['annotation'])
     context.start = context.annotation.reference_match('start')
     context.end = context.annotation.reference_match('end')
     
@@ -114,9 +112,8 @@ def step_impl(context):
         strand = context.input['strand'],
         transcript = context.input['transcript'],
         type = context.input['type'],
-        annotation_choice = context.input['annotation']
     )
-    context.annotation.get_annotations()
+    context.annotation.get_annotations(context.input['annotation'])
     context.start = context.annotation.reference_match('start')
     context.end = context.annotation.reference_match('end')
     
@@ -167,9 +164,8 @@ def step_impl(context):
         strand = context.input['strand'],
         transcript = context.input['transcript'],
         type = context.input['type'],
-        annotation_choice = context.input['annotation']
     )
-    context.annotation.get_annotations()
+    context.annotation.get_annotations(context.input['annotation'])
     context.start = context.annotation.reference_match('start')
     context.end = context.annotation.reference_match('end')
     
@@ -218,9 +214,8 @@ def step_impl(context):
         strand = context.input['strand'],
         transcript = context.input['transcript'],
         type = context.input['type'],
-        annotation_choice = context.input['annotation']
     )
-    context.annotation.get_annotations()
+    context.annotation.get_annotations(context.input['annotation'])
     context.start = context.annotation.reference_match('start')
     context.end = context.annotation.reference_match('end')
     
@@ -269,9 +264,8 @@ def step_impl(context):
         strand = context.input['strand'],
         transcript = context.input['transcript'],
         type = context.input['type'],
-        annotation_choice = context.input['annotation']
     )
-    context.annotation.get_annotations()
+    context.annotation.get_annotations(context.input['annotation'])
     context.start = context.annotation.reference_match('start')
     context.end = context.annotation.reference_match('end')
     
@@ -290,12 +284,19 @@ def step_impl(context, event, event_type, intron, location, distance_from_authen
     print(event_type)
     print(str(context.create_annotations['introns']))
     print(intron)
+    print(str(context.create_annotations['location']))
+    print(location)
+    print(str(context.create_annotations['distance_from_authentic']))
+    print(distance_from_authentic)
     assert str(context.create_annotations['event']) == event, f"Expected event: {event}, but got: {str(context.create_annotations['event'])}"
     assert str(context.create_annotations['event_type']) == event_type, f"Expected event: {event_type}, but got: {str(context.create_annotations['event_type'])}"
     assert str(context.create_annotations['introns']) == intron, f"Expected event: {intron}, but got: {context.create_annotations['introns']}"
+    assert str(context.create_annotations['location']) == location, f"Expected event: {location}, but got: {context.create_annotations['location']}"
+    assert str(context.create_annotations['distance_from_authentic']) == distance_from_authentic, f"Expected event: {distance_from_authentic}, but got: {context.create_annotations['distance_from_authentic']}"
 
 
-# CRYPTIC ACCEPTOR
+
+# CRYPTIC ACCEPTORS
 
 @given(u'a cryptic acceptor event with chrom {chrom}, start {start}, end {end}, strand {strand}, transcript {transcript}, and type {type}')
 def step_impl(context, chrom, start, end, strand, transcript, type):
@@ -320,9 +321,8 @@ def step_impl(context):
         strand = context.input['strand'],
         transcript = context.input['transcript'],
         type = context.input['type'],
-        annotation_choice = context.input['annotation']
     )
-    context.annotation.get_annotations()
+    context.annotation.get_annotations(context.input['annotation'])
     context.start = context.annotation.reference_match('start')
     context.end = context.annotation.reference_match('end')
     
@@ -341,9 +341,15 @@ def step_impl(context, event, event_type, intron, location, distance_from_authen
     print(event_type)
     print(str(context.create_annotations['introns']))
     print(intron)
+    print(str(context.create_annotations['location']))
+    print(location)
+    print(str(context.create_annotations['distance_from_authentic']))
+    print(distance_from_authentic)
     assert str(context.create_annotations['event']) == event, f"Expected event: {event}, but got: {str(context.create_annotations['event'])}"
     assert str(context.create_annotations['event_type']) == event_type, f"Expected event: {event_type}, but got: {str(context.create_annotations['event_type'])}"
     assert str(context.create_annotations['introns']) == intron, f"Expected event: {intron}, but got: {context.create_annotations['introns']}"
+    assert str(context.create_annotations['location']) == location, f"Expected event: {location}, but got: {context.create_annotations['location']}"
+    assert str(context.create_annotations['distance_from_authentic']) == distance_from_authentic, f"Expected event: {distance_from_authentic}, but got: {context.create_annotations['distance_from_authentic']}"
 
 
 # SKIPPING WITH A CRYPTIC (SKIP CRYPS)
@@ -371,9 +377,8 @@ def step_impl(context):
         strand = context.input['strand'],
         transcript = context.input['transcript'],
         type = context.input['type'],
-        annotation_choice = context.input['annotation']
     )
-    context.annotation.get_annotations()
+    context.annotation.get_annotations(context.input['annotation'])
     context.start = context.annotation.reference_match('start')
     context.end = context.annotation.reference_match('end')
     
@@ -392,9 +397,15 @@ def step_impl(context, event, event_type, intron, location, distance_from_authen
     print(event_type)
     print(str(context.create_annotations['introns']))
     print(intron)
+    print(str(context.create_annotations['location']))
+    print(location)
+    print(str(context.create_annotations['distance_from_authentic']))
+    print(distance_from_authentic)
     assert str(context.create_annotations['event']) == event, f"Expected event: {event}, but got: {str(context.create_annotations['event'])}"
     assert str(context.create_annotations['event_type']) == event_type, f"Expected event: {event_type}, but got: {str(context.create_annotations['event_type'])}"
     assert str(context.create_annotations['introns']) == intron, f"Expected event: {intron}, but got: {context.create_annotations['introns']}"
+    assert str(context.create_annotations['location']) == location, f"Expected event: {location}, but got: {context.create_annotations['location']}"
+    assert str(context.create_annotations['distance_from_authentic']) == distance_from_authentic, f"Expected event: {distance_from_authentic}, but got: {context.create_annotations['distance_from_authentic']}"
 
 
 # UNANNOTATED JUNCTIONS
@@ -422,9 +433,8 @@ def step_impl(context):
         strand = context.input['strand'],
         transcript = context.input['transcript'],
         type = context.input['type'],
-        annotation_choice = context.input['annotation']
     )
-    context.annotation.get_annotations()
+    context.annotation.get_annotations(context.input['annotation'])
     context.start = context.annotation.reference_match('start')
     context.end = context.annotation.reference_match('end')
     
@@ -473,9 +483,8 @@ def step_impl(context):
         strand = context.input['strand'],
         transcript = context.input['transcript'],
         type = context.input['type'],
-        annotation_choice = context.input['annotation']
     )
-    context.annotation.get_annotations()
+    context.annotation.get_annotations(context.input['annotation'])
     context.start = context.annotation.reference_match('start')
     context.end = context.annotation.reference_match('end')
     
@@ -494,6 +503,12 @@ def step_impl(context, event, event_type, intron, location, distance_from_authen
     print(event_type)
     print(str(context.create_annotations['introns']))
     print(intron)
+    print(str(context.create_annotations['location']))
+    print(location)
+    print(str(context.create_annotations['distance_from_authentic']))
+    print(distance_from_authentic)
     assert str(context.create_annotations['event']) == event, f"Expected event: {event}, but got: {str(context.create_annotations['event'])}"
     assert str(context.create_annotations['event_type']) == event_type, f"Expected event: {event_type}, but got: {str(context.create_annotations['event_type'])}"
     assert str(context.create_annotations['introns']) == intron, f"Expected event: {intron}, but got: {context.create_annotations['introns']}"
+    assert str(context.create_annotations['location']) == location, f"Expected event: {location}, but got: {context.create_annotations['location']}"
+    assert str(context.create_annotations['distance_from_authentic']) == distance_from_authentic, f"Expected event: {distance_from_authentic}, but got: {context.create_annotations['distance_from_authentic']}"
