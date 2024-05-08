@@ -138,7 +138,7 @@ def step_impl(context, event, event_type, intron):
     print(intron)
     assert str(context.create_annotations['event']) == event, f"Expected event: {event}, but got: {str(context.create_annotations['event'])}"
     assert str(context.create_annotations['event_type']) == event_type, f"Expected event: {event_type}, but got: {str(context.create_annotations['event_type'])}"
-    assert str(context.create_annotations['introns']) == intron, f"Expected event: {intron}, but got: {str(context.create_annotations['intron'])}"
+    assert str(context.create_annotations['introns']) == intron, f"Expected event: {intron}, but got: {str(context.create_annotations['introns'])}"
 
 
 
@@ -180,11 +180,17 @@ def step_impl(context):
     
     context.create_annotations = context.annotation.fetch_transcript_annotations(context.start, context.end)
     
-@then(u'the resulting annotations of exon skipping should be event {event}')
-def step_impl(context, event):
-    print(str(context.create_annotations))
+@then(u'the resulting annotations of exon skipping should be event {event} of type {event_type} at intron {intron}')
+def step_impl(context, event, event_type, intron):
+    print(str(context.create_annotations['event']))
     print(event)
-    assert str(context.create_annotations) == event, f"Expected event: {event}, but got: {str(context.create_annotations)}"
+    print(str(context.create_annotations['event_type']))
+    print(event_type)
+    print(str(context.create_annotations['introns']))
+    print(intron)
+    assert str(context.create_annotations['event']) == event, f"Expected event: {event}, but got: {str(context.create_annotations['event'])}"
+    assert str(context.create_annotations['event_type']) == event_type, f"Expected event: {event_type}, but got: {str(context.create_annotations['event_type'])}"
+    assert str(context.create_annotations['introns']) == intron, f"Expected event: {intron}, but got: {context.create_annotations['introns']}"
 
 
 # INTRON RETENTION
@@ -225,11 +231,17 @@ def step_impl(context):
     
     context.create_annotations = context.annotation.fetch_transcript_annotations(context.start, context.end)
     
-@then(u'the resulting annotations of intron retention should be event {event}')
-def step_impl(context, event):
-    print(str(context.create_annotations))
+@then(u'the resulting annotations of intron retention should be event {event} of type {event_type} at intron {intron}')
+def step_impl(context, event, event_type, intron):
+    print(str(context.create_annotations['event']))
     print(event)
-    assert str(context.create_annotations) == event, f"Expected event: {event}, but got: {str(context.create_annotations)}"
+    print(str(context.create_annotations['event_type']))
+    print(event_type)
+    print(str(context.create_annotations['introns']))
+    print(intron)
+    assert str(context.create_annotations['event']) == event, f"Expected event: {event}, but got: {str(context.create_annotations['event'])}"
+    assert str(context.create_annotations['event_type']) == event_type, f"Expected event: {event_type}, but got: {str(context.create_annotations['event_type'])}"
+    assert str(context.create_annotations['introns']) == intron, f"Expected event: {intron}, but got: {context.create_annotations['introns']}"
 
 
 # CRYPTIC DONOR
@@ -270,11 +282,17 @@ def step_impl(context):
     
     context.create_annotations = context.annotation.fetch_transcript_annotations(context.start, context.end)
     
-@then(u'the resulting annotations of cryptic donors should be event {event}')
-def step_impl(context, event):
-    print(str(context.create_annotations))
+@then(u'the resulting annotations of cryptic donors should be event {event} of location {location} and type {event_type} at intron {intron} at a distance of {distance_from_authentic}')
+def step_impl(context, event, event_type, intron, location, distance_from_authentic):
+    print(str(context.create_annotations['event']))
     print(event)
-    assert str(context.create_annotations) == event, f"Expected event: {event}, but got: {str(context.create_annotations)}"
+    print(str(context.create_annotations['event_type']))
+    print(event_type)
+    print(str(context.create_annotations['introns']))
+    print(intron)
+    assert str(context.create_annotations['event']) == event, f"Expected event: {event}, but got: {str(context.create_annotations['event'])}"
+    assert str(context.create_annotations['event_type']) == event_type, f"Expected event: {event_type}, but got: {str(context.create_annotations['event_type'])}"
+    assert str(context.create_annotations['introns']) == intron, f"Expected event: {intron}, but got: {context.create_annotations['introns']}"
 
 
 # CRYPTIC ACCEPTOR
@@ -315,11 +333,17 @@ def step_impl(context):
     
     context.create_annotations = context.annotation.fetch_transcript_annotations(context.start, context.end)
     
-@then(u'the resulting annotations of cryptic acceptors should be event {event}')
-def step_impl(context, event):
-    print(str(context.create_annotations))
+@then(u'the resulting annotations of cryptic acceptors should be event {event} of location {location} and type {event_type} at intron {intron} at a distance of {distance_from_authentic}')
+def step_impl(context, event, event_type, intron, location, distance_from_authentic):
+    print(str(context.create_annotations['event']))
     print(event)
-    assert str(context.create_annotations) == event, f"Expected event: {event}, but got: {str(context.create_annotations)}"
+    print(str(context.create_annotations['event_type']))
+    print(event_type)
+    print(str(context.create_annotations['introns']))
+    print(intron)
+    assert str(context.create_annotations['event']) == event, f"Expected event: {event}, but got: {str(context.create_annotations['event'])}"
+    assert str(context.create_annotations['event_type']) == event_type, f"Expected event: {event_type}, but got: {str(context.create_annotations['event_type'])}"
+    assert str(context.create_annotations['introns']) == intron, f"Expected event: {intron}, but got: {context.create_annotations['introns']}"
 
 
 # SKIPPING WITH A CRYPTIC (SKIP CRYPS)
@@ -360,11 +384,17 @@ def step_impl(context):
     
     context.create_annotations = context.annotation.fetch_transcript_annotations(context.start, context.end)
     
-@then(u'the resulting annotations of skip-cryps should be event {event}')
-def step_impl(context, event):
-    print(str(context.create_annotations))
+@then(u'the resulting annotations of skip-cryps should be event {event} of location {location} and type {event_type} at intron {intron} at a distance of {distance_from_authentic}')
+def step_impl(context, event, event_type, intron, location, distance_from_authentic):
+    print(str(context.create_annotations['event']))
     print(event)
-    assert str(context.create_annotations) == event, f"Expected event: {event}, but got: {str(context.create_annotations)}"
+    print(str(context.create_annotations['event_type']))
+    print(event_type)
+    print(str(context.create_annotations['introns']))
+    print(intron)
+    assert str(context.create_annotations['event']) == event, f"Expected event: {event}, but got: {str(context.create_annotations['event'])}"
+    assert str(context.create_annotations['event_type']) == event_type, f"Expected event: {event_type}, but got: {str(context.create_annotations['event_type'])}"
+    assert str(context.create_annotations['introns']) == intron, f"Expected event: {intron}, but got: {context.create_annotations['introns']}"
 
 
 # UNANNOTATED JUNCTIONS
@@ -405,11 +435,17 @@ def step_impl(context):
     
     context.create_annotations = context.annotation.fetch_transcript_annotations(context.start, context.end)
     
-@then(u'the resulting annotations of unannotated junctions should be event {event}')
-def step_impl(context, event):
-    print(str(context.create_annotations))
+@then(u'the resulting annotations of unannotated junctions should be event {event} of location {location} and type {event_type} at intron {intron}')
+def step_impl(context, event, event_type, intron, location):
+    print(str(context.create_annotations['event']))
     print(event)
-    assert str(context.create_annotations) == event, f"Expected event: {event}, but got: {str(context.create_annotations)}"
+    print(str(context.create_annotations['event_type']))
+    print(event_type)
+    print(str(context.create_annotations['introns']))
+    print(intron)
+    assert str(context.create_annotations['event']) == event, f"Expected event: {event}, but got: {str(context.create_annotations['event'])}"
+    assert str(context.create_annotations['event_type']) == event_type, f"Expected event: {event_type}, but got: {str(context.create_annotations['event_type'])}"
+    assert str(context.create_annotations['introns']) == intron, f"Expected event: {intron}, but got: {context.create_annotations['introns']}"
 
 
 # ALTERNATE SPLICING
@@ -450,8 +486,14 @@ def step_impl(context):
     
     context.create_annotations = context.annotation.fetch_transcript_annotations(context.start, context.end)
     
-@then(u'the resulting annotations of alternate splicing should be event {event}')
-def step_impl(context, event):
-    print(str(context.create_annotations))
+@then(u'the resulting annotations of alternate splicing should be event {event} of location {location} and type {event_type} at intron {intron} at a distance of {distance_from_authentic}')
+def step_impl(context, event, event_type, intron, location, distance_from_authentic):
+    print(str(context.create_annotations['event']))
     print(event)
-    assert str(context.create_annotations) == event, f"Expected event: {event}, but got: {str(context.create_annotations)}"
+    print(str(context.create_annotations['event_type']))
+    print(event_type)
+    print(str(context.create_annotations['introns']))
+    print(intron)
+    assert str(context.create_annotations['event']) == event, f"Expected event: {event}, but got: {str(context.create_annotations['event'])}"
+    assert str(context.create_annotations['event_type']) == event_type, f"Expected event: {event_type}, but got: {str(context.create_annotations['event_type'])}"
+    assert str(context.create_annotations['introns']) == intron, f"Expected event: {intron}, but got: {context.create_annotations['introns']}"

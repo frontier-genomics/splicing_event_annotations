@@ -29,53 +29,53 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 		Given an alternate splicing event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
 		And the annotation dataset to be used for annotating alternate splicing is refseq
 		When the alternate splicing events are annotated with the annotation dataset
-		Then the resulting annotations of alternate splicing should be event <event>
+		Then the resulting annotations of alternate splicing should be event <event> of location <location> and type <event_type> at intron <intron> at a distance of <distance_from_authentic>
 
 		Examples:
-			| chrom | start    | end      | strand | type | transcript     | event_type              | location   | distance_from_authentic | event                                                                | intron | comment                                            |
-			| chrX  | 53235185 | 53236321 | -      | sj   | NM_001111125.3 | alternate exon skipping |            |                         | alternate exon 14 skipping (NM_001410736.1, NM_015075.2)             |        | single exon skipping; 2 alt transcripts            |
-			| chrX  | 13749534 | 13753367 | +      | sj   | NM_003611.3    | alternate exon skipping |            |                         | alternate exon 10 skipping (NM_001330209.2 exon 9-10)                |        | single exon skipping; 1 alt transcript             |
-			| chrX  | 13749534 | 13753367 | +      | sj   | NM_001330210.2 | alternate exon skipping |            |                         | alternate exon 11 skipping (NM_001330209.2 exon 9-10)                |        | single exon skipping; 1 alt transcript             |
-			| chr9  | 34647259 | 34647831 | +      | sj   | NM_000155.4    | alternate exon skipping |            |                         | alternate exon 3-4 skipping (NM_001258332.2 exon 2-3)                | 2      | double exon skipping; 1 alt transcript             |
-			| chrX  | 41229828 | 41230500 | +      | sj   | NM_001039591.3 | alternate donor         | intronic   | +49                     | alternate intron 43 donor @ +49 (NM_001039590.3, NM_001410748.1)     | 43     | intronic donor; 2 alt transcripts                  |
-			| chrX  | 41229828 | 41230500 | +      | sj   | NM_001410749.1 | alternate donor         | intronic   | +49                     | alternate intron 44 donor @ +49 (NM_001039590.3, NM_001410748.1)     | 44     | intronic donor; 2 alt transcripts                  |
-			| chrX  | 13751369 | 13753367 | +      | sj   | NM_001330209.2 | alternate donor         | intronic   | +1836                   | alternate intron 9 donor @ +1836 (NM_001330210.2, NM_003611.3)       | 9      | intronic donor; 2 alt transcripts                  |
-			| chrX  | 53256062 | 53279563 | -      | sj   | NM_001111125.3 | alternate donor         | intronic   | +12332                  | alternate intron 2 donor @ +12332 (NM_015075.2 exon 2-3)             | 2      | intronic donor; 1 alt transcript                   |
-			| chrX  | 53256062 | 53279563 | -      | sj   | NM_001410736.1 | alternate donor         | intronic   | +12332                  | alternate intron 2 donor @ +12332 (NM_015075.2 exon 2-3)             |        | intronic donor; 1 alt transcript                   |
-			| chrX  | 41087666 | 41123470 | +      | sj   | NM_001039591.3 | alternate donor         | intronic   | +1557                   | alternate intron 1 donor @ +1557 (NM_001410748.1, NM_001410749.1)    | 1      | intronic donor; 2 alt transcripts                  |
-			| chrX  | 13749534 | 13751248 | +      | sj   | NM_001330209.2 | alternate acceptor      | intronic   | -2120                   | alternate intron 9 acceptor @ -2120 (NM_001330210.2, NM_003611.3)    | 9      | intronic acceptor; 2 alt transcripts               |
-			| chrX  | 53267065 | 53279563 | -      | sj   | NM_015075.2    | alternate acceptor      | intronic   | -11004                  | alternate intron 2 acceptor @ -11004 (NM_001243197.2 exon 2-3)       |        | intronic acceptor; 1 alt transcript                |
-			| chrX  | 53256062 | 53291894 | -      | sj   | NM_015075.2    | alternate donor         | intergenic | -12331                  | alternate intergenic donor @ -12331 (NM_001111125.3, NM_001410736.1) |        | intergenic donor; 2 alt transcripts                |
-			| chrX  | 40077970 | 40177006 | -      | sj   | NM_001123385.2 | alternate donor         | intergenic | -79792                  | alternate intergenic donor @ -79792 (NM_001123383.1, NM_001123384.2) | 1      | intergenic donor; 2 alt transcripts                |
-			| chrX  | 53256062 | 53279563 | -      | sj   | NM_001243197.2 | alternate acceptor      | intergenic | +11003                  | alternate intergenic acceptor @ +11003 (NM_015075.2 exon 2-3)        |        | intergenic acceptor; 1 alt transcript              |
-			| chrX  | 53279660 | 53281495 | -      | sj   | NM_001111125.3 | alternate intron        | intronic   |                         | alternate intronic junction (NM_001243197.2, NM_015075.2)            |        | unannotated intronic junction; 2 alt transcripts   |
-			| chrX  | 53267065 | 53279563 | -      | sj   | NM_001111125.3 | alternate intron        | intronic   |                         | alternate intronic junction (NM_001243197.2 exon 2-3)                |        | unannotated intronic junction; 1 alt transcript    |
-			| chrX  | 53279660 | 53281495 | -      | sj   | NM_001410736.1 | alternate intron        | intronic   |                         | alternate intronic junction (NM_001243197.2, NM_015075.2)            |        | unannotated intronic junction; 2 alt transcripts   |
-			| chrX  | 53267065 | 53279563 | -      | sj   | NM_001410736.1 | alternate intron        | intronic   |                         | alternate intronic junction (NM_001243197.2 exon 2-3)                |        | unannotated intronic junction; 1 alt transcript    |
-			| chrX  | 53256062 | 53291894 | -      | sj   | NM_001243197.2 | alternate intron        | intergenic |                         | alternate intergenic junction (NM_001111125.3, NM_001410736.1)       |        | unannotated intergenic junction; 2 alt transcripts |
+			| chrom | start    | end      | strand | type | transcript     | event_type              | location   | distance_from_authentic | event                                                                | intron  | comment                                            |
+			| chrX  | 53235185 | 53236321 | -      | sj   | NM_001111125.3 | alternate exon skipping | NA         | NA                      | alternate exon 14 skipping (NM_001410736.1, NM_015075.2)             | 13, 14  | single exon skipping; 2 alt transcripts            |
+			| chrX  | 13749534 | 13753367 | +      | sj   | NM_003611.3    | alternate exon skipping | NA         | NA                      | alternate exon 10 skipping (NM_001330209.2 exon 9-10)                | 9, 10   | single exon skipping; 1 alt transcript             |
+			| chrX  | 13749534 | 13753367 | +      | sj   | NM_001330210.2 | alternate exon skipping | NA         | NA                      | alternate exon 11 skipping (NM_001330209.2 exon 9-10)                | 10, 11  | single exon skipping; 1 alt transcript             |
+			| chr9  | 34647259 | 34647831 | +      | sj   | NM_000155.4    | alternate exon skipping | NA         | NA                      | alternate exon 3-4 skipping (NM_001258332.2 exon 2-3)                | 2, 3, 4 | double exon skipping; 1 alt transcript             |
+			| chrX  | 41229828 | 41230500 | +      | sj   | NM_001039591.3 | alternate donor         | intronic   | +49                     | alternate intron 43 donor @ +49 (NM_001039590.3, NM_001410748.1)     | 43      | intronic donor; 2 alt transcripts                  |
+			| chrX  | 41229828 | 41230500 | +      | sj   | NM_001410749.1 | alternate donor         | intronic   | +49                     | alternate intron 44 donor @ +49 (NM_001039590.3, NM_001410748.1)     | 44      | intronic donor; 2 alt transcripts                  |
+			| chrX  | 13751369 | 13753367 | +      | sj   | NM_001330209.2 | alternate donor         | intronic   | +1836                   | alternate intron 9 donor @ +1836 (NM_001330210.2, NM_003611.3)       | 9       | intronic donor; 2 alt transcripts                  |
+			| chrX  | 53256062 | 53279563 | -      | sj   | NM_001111125.3 | alternate donor         | intronic   | +12332                  | alternate intron 2 donor @ +12332 (NM_015075.2 exon 2-3)             | 2       | intronic donor; 1 alt transcript                   |
+			| chrX  | 53256062 | 53279563 | -      | sj   | NM_001410736.1 | alternate donor         | intronic   | +12332                  | alternate intron 2 donor @ +12332 (NM_015075.2 exon 2-3)             | 2       | intronic donor; 1 alt transcript                   |
+			| chrX  | 41087666 | 41123470 | +      | sj   | NM_001039591.3 | alternate donor         | intronic   | +1557                   | alternate intron 1 donor @ +1557 (NM_001410748.1, NM_001410749.1)    | 1       | intronic donor; 2 alt transcripts                  |
+			| chrX  | 13749534 | 13751248 | +      | sj   | NM_001330209.2 | alternate acceptor      | intronic   | -2120                   | alternate intron 9 acceptor @ -2120 (NM_001330210.2, NM_003611.3)    | 9       | intronic acceptor; 2 alt transcripts               |
+			| chrX  | 53267065 | 53279563 | -      | sj   | NM_015075.2    | alternate acceptor      | intronic   | -11004                  | alternate intron 2 acceptor @ -11004 (NM_001243197.2 exon 2-3)       | 2       | intronic acceptor; 1 alt transcript                |
+			| chrX  | 53256062 | 53291894 | -      | sj   | NM_015075.2    | alternate donor         | intergenic | -12331                  | alternate intergenic donor @ -12331 (NM_001111125.3, NM_001410736.1) | NA      | intergenic donor; 2 alt transcripts                |
+			| chrX  | 40077970 | 40177006 | -      | sj   | NM_001123385.2 | alternate donor         | intergenic | -79792                  | alternate intergenic donor @ -79792 (NM_001123383.1, NM_001123384.2) | NA      | intergenic donor; 2 alt transcripts                |
+			| chrX  | 53256062 | 53279563 | -      | sj   | NM_001243197.2 | alternate acceptor      | intergenic | +11003                  | alternate intergenic acceptor @ +11003 (NM_015075.2 exon 2-3)        | NA      | intergenic acceptor; 1 alt transcript              |
+			| chrX  | 53279660 | 53281495 | -      | sj   | NM_001111125.3 | alternate intron        | intronic   | NA                      | alternate intronic junction (NM_001243197.2, NM_015075.2)            | NA      | unannotated intronic junction; 2 alt transcripts   |
+			| chrX  | 53267065 | 53279563 | -      | sj   | NM_001111125.3 | alternate intron        | intronic   | NA                      | alternate intronic junction (NM_001243197.2 exon 2-3)                | NA      | unannotated intronic junction; 1 alt transcript    |
+			| chrX  | 53279660 | 53281495 | -      | sj   | NM_001410736.1 | alternate intron        | intronic   | NA                      | alternate intronic junction (NM_001243197.2, NM_015075.2)            | NA      | unannotated intronic junction; 2 alt transcripts   |
+			| chrX  | 53267065 | 53279563 | -      | sj   | NM_001410736.1 | alternate intron        | intronic   | NA                      | alternate intronic junction (NM_001243197.2 exon 2-3)                | NA      | unannotated intronic junction; 1 alt transcript    |
+			| chrX  | 53256062 | 53291894 | -      | sj   | NM_001243197.2 | alternate intron        | intergenic | NA                      | alternate intergenic junction (NM_001111125.3, NM_001410736.1)       | NA      | unannotated intergenic junction; 2 alt transcripts |
 
 
 	Scenario Outline: Exon Skipping
 		Given an exon skipping event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
 		And the annotation dataset to be used for annotating exon skipping is refseq
 		When the exon skipping events are annotated with the annotation dataset
-		Then the resulting annotations of exon skipping should be event <event>
+		Then the resulting annotations of exon skipping should be event <event> of type <event_type> at intron <intron>
 
 		Examples:
-			| chrom | start    | end      | strand | type | transcript     | event_type    | event                 | intron        | comment |
-			| chrX  | 40057322 | 40062745 | -      | sj   | NM_001123385.2 | exon skipping | exon 10 skipping      | 9, 10         | single  |
-			| chrX  | 41134838 | 41140655 | +      | sj   | NM_001039591.3 | exon skipping | exon 6 skipping       | 5, 6          | single  |
-			| chrX  | 41153082 | 41167481 | +      | sj   | NM_001039591.3 | exon skipping | exon 15-16 skipping   | 14, 15, 16    | double  |
-			| chrX  | 53238307 | 53243331 | -      | sj   | NM_001111125.3 | exon skipping | exon 10-11 skipping   | 10, 11, 12    | double  |
-			| chr9  | 34647259 | 34648114 | +      | sj   | NM_000155.4    | exon skipping | exon 3-4-5 skipping   | 2, 3, 4, 5    | triple  |
-			| chrX  | 53238307 | 53246968 | -      | sj   | NM_001111125.3 | exon skipping | exon 9-10-11 skipping | 9, 10, 11, 12 | triple  |
+			| chrom | start    | end      | strand | type | transcript     | event_type    | event                 | intron       | comment |
+			| chrX  | 40057322 | 40062745 | -      | sj   | NM_001123385.2 | exon skipping | exon 10 skipping      | 9, 10        | single  |
+			| chrX  | 41134838 | 41140655 | +      | sj   | NM_001039591.3 | exon skipping | exon 6 skipping       | 5, 6         | single  |
+			| chrX  | 41153082 | 41167481 | +      | sj   | NM_001039591.3 | exon skipping | exon 15-16 skipping   | 14, 15, 16   | double  |
+			| chrX  | 53238307 | 53243331 | -      | sj   | NM_001111125.3 | exon skipping | exon 10-11 skipping   | 9, 10, 11    | double  |
+			| chr9  | 34647259 | 34648114 | +      | sj   | NM_000155.4    | exon skipping | exon 3-4-5 skipping   | 2, 3, 4, 5   | triple  |
+			| chrX  | 53238307 | 53246968 | -      | sj   | NM_001111125.3 | exon skipping | exon 9-10-11 skipping | 8, 9, 10, 11 | triple  |
 
 
 	Scenario Outline: Intron Retention
 		Given an intron retention event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
 		And the annotation dataset to be used for annotating intron retention is refseq
 		When the intron retention events are annotated with the annotation dataset
-		Then the resulting annotations of intron retention should be event <event>
+		Then the resulting annotations of intron retention should be event <event> of type <event_type> at intron <intron>
 
 		Examples:
 			| chrom | start    | end      | strand | type | transcript     | event_type       | event               | intron | comment |
@@ -87,7 +87,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 		Given a cryptic acceptor event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
 		And the annotation dataset to be used for annotating cryptic acceptors is refseq
 		When the cryptic acceptor events are annotated with the annotation dataset
-		Then the resulting annotations of cryptic acceptors should be event <event>
+		Then the resulting annotations of cryptic acceptors should be event <event> of location <location> and type <event_type> at intron <intron> at a distance of <distance_from_authentic>
 
 		Examples:
 			| chrom | start    | end      | strand | type | transcript     | event_type       | location | distance_from_authentic | event                              | intron | comment |
@@ -105,7 +105,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 		Given a cryptic donor event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
 		And the annotation dataset to be used for annotating cryptic donors is refseq
 		When the cryptic donor events are annotated with the annotation dataset
-		Then the resulting annotations of cryptic donors should be event <event>
+		Then the resulting annotations of cryptic donors should be event <event> of location <location> and type <event_type> at intron <intron> at a distance of <distance_from_authentic>
 
 		Examples:
 			| chrom | start    | end      | strand | type | transcript     | event_type    | location | distance_from_authentic | event                           | intron | comment                                                                                                          |
@@ -118,11 +118,12 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 			| chrX  | 41217284 | 41218371 | +      | sj   | NM_001039591.3 | cryptic donor | exonic   | -60                     | cryptic exon 36 donor @ -60     | 36     |                                                                                                                  |
 			| chrX  | 53247136 | 53248139 | -      | sj   | NM_001111125.3 | cryptic donor | exonic   | -26                     | cryptic exon 7 donor @ -26      | 7      |                                                                                                                  |
 
+
 	Scenario Outline: Skip-Cryp Events
 		Given a skip-cryp event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
 		And the annotation dataset to be used for annotating skip-cryps is refseq
 		When the skip-cryp events are annotated with the annotation dataset
-		Then the resulting annotations of skip-cryps should be event <event>
+		Then the resulting annotations of skip-cryps should be event <event> of location <location> and type <event_type> at intron <intron> at a distance of <distance_from_authentic>
 
 		Examples:
 			| chrom | start    | end      | strand | type | transcript     | event_type                      | location | distance_from_authentic | event                                               | intron     | comment                                   |
@@ -132,9 +133,9 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 			| chrX  | 53243517 | 53248720 | -      | sj   | NM_001111125.3 | exon skipping, cryptic acceptor | intronic | -46                     | exon 7-8 skipping/cryptic intron 8 acceptor @ -46   | 6, 7, 8    | double skipping/cryptic intronic acceptor |
 			| chrX  | 53243419 | 53248720 | -      | sj   | NM_001111125.3 | exon skipping, cryptic acceptor | exonic   | +53                     | exon 7-8 skipping/cryptic exon 9 acceptor @ +53     | 6, 7, 8    | double skipping/cryptic exonic acceptor   |
 			| chr9  | 34647259 | 34647892 | +      | sj   | NM_000155.4    | exon skipping, cryptic acceptor | exonic   | +61                     | exon 3-4 skipping/cryptic exon 5 acceptor @ +61     | 2, 3, 4    | double skipping/cryptic exonic acceptor   |
-			| chrX  | 53243472 | 53248044 | -      | sj   | NM_001111125.3 | exon skipping, cryptic donor    | intronic | +70                     | exon 8 skipping/cryptic intron 7 donor @ +70        | 7, 8, 9    | single skipping/cryptic intronic donor    |
-			| chr9  | 34647601 | 34647831 | +      | sj   | NM_000155.4    | exon skipping, cryptic donor    | intronic | +34                     | exon 4 skipping/cryptic intron 3 donor @ +34        | 7, 8, 9    | single skipping/cryptic intronic donor    |
-			| chrX  | 53243472 | 53248139 | -      | sj   | NM_001111125.3 | exon skipping, cryptic donor    | exonic   | -26                     | exon 8 skipping/cryptic exon 7 donor @ -26          | 7, 8, 9    | single skipping/cryptic exonic donor      |
+			| chrX  | 53243472 | 53248044 | -      | sj   | NM_001111125.3 | exon skipping, cryptic donor    | intronic | +70                     | exon 8 skipping/cryptic intron 7 donor @ +70        | 7, 8       | single skipping/cryptic intronic donor    |
+			| chr9  | 34647601 | 34647831 | +      | sj   | NM_000155.4    | exon skipping, cryptic donor    | intronic | +34                     | exon 4 skipping/cryptic intron 3 donor @ +34        | 3, 4       | single skipping/cryptic intronic donor    |
+			| chrX  | 53243472 | 53248139 | -      | sj   | NM_001111125.3 | exon skipping, cryptic donor    | exonic   | -26                     | exon 8 skipping/cryptic exon 7 donor @ -26          | 7, 8       | single skipping/cryptic exonic donor      |
 			| chrX  | 41198618 | 41205302 | +      | sj   | NM_001039591.3 | exon skipping, cryptic donor    | exonic   | -133                    | exon 31 skipping/cryptic exon 30 donor @ -133       | 30, 31     | single skipping/cryptic exonic donor      |
 			| chrX  | 53235185 | 53236474 | -      | sj   | NM_001111125.3 | exon skipping, cryptic donor    | exonic   | -153                    | exon 14 skipping/cryptic exon 13 donor @ -153       | 13, 14     | single skipping/cryptic exonic donor      |
 
@@ -143,15 +144,15 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 		Given an unannotated junction with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
 		And the annotation dataset to be used for annotating unannotated junctions is refseq
 		When the unannotated junctions are annotated with the annotation dataset
-		Then the resulting annotations of unannotated junctions should be event <event>
+		Then the resulting annotations of unannotated junctions should be event <event> of location <location> and type <event_type> at intron <intron>
 
 		Examples:
 			| chrom | start    | end      | strand | type | transcript     | event_type                           | location          | event                                                    | intron | comment                                                             |
-			| chrX  | 41149755 | 41151932 | +      | sj   | NM_001039591.3 | unannotated intron                   | intronic          | unannotated intronic junction                            |        | intronic; this one also skips exon 13                               |
-			| chrX  | 41101571 | 41102912 | -      | sj   | NM_001039591.3 | unannotated intron (opposite strand) | intronic          | unannotated intronic junction (opposite strand)          | 1      | intronic; opposite strand                                           |
-			| chrX  | 40081196 | 40081258 | +      | sj   | NM_001123385.2 | unannotated intron (opposite strand) | intronic          | unannotated intronic junction (opposite strand)          | 1      | intronic; opposite strand                                           |
-			| chrX  | 41229636 | 41230503 | +      | sj   | NM_001039591.3 | unannotated intron                   | exonic            | unannotated exonic junction                              |        | exonic                                                              |
-			| chrX  | 40096604 | 40097680 | +      | sj   | NM_001123385.2 | unannotated intron (opposite strand) | intronic/exonic   | unannotated intronic/exonic junction (opposite strand)   | 1      | intronic/exonic; opposite strand                                    |
+			| chrX  | 41149755 | 41151932 | +      | sj   | NM_001039591.3 | unannotated intron                   | intronic          | unannotated intronic junction                            | NA     | intronic; this one also skips exon 13                               |
+			| chrX  | 41101571 | 41102912 | -      | sj   | NM_001039591.3 | unannotated intron (opposite strand) | intronic          | unannotated intronic junction (opposite strand)          | NA     | intronic; opposite strand                                           |
+			| chrX  | 40081196 | 40081258 | +      | sj   | NM_001123385.2 | unannotated intron (opposite strand) | intronic          | unannotated intronic junction (opposite strand)          | NA     | intronic; opposite strand                                           |
+			| chrX  | 41229636 | 41230503 | +      | sj   | NM_001039591.3 | unannotated intron                   | exonic            | unannotated exonic junction                              | NA     | exonic                                                              |
+			| chrX  | 40096604 | 40097680 | +      | sj   | NM_001123385.2 | unannotated intron (opposite strand) | intronic/exonic   | unannotated intronic/exonic junction (opposite strand)   | NA     | intronic/exonic; opposite strand                                    |
 			| chrX  | 40097722 | 40098095 | +      | sj   | NM_001123385.2 | unannotated intron (opposite strand) | intergenic/exonic | unannotated intergenic/exonic junction (opposite strand) | NA     | intergenic/exonic; opposite strand                                  |
 			| chrX  | 40113978 | 40208244 | -      | sj   | NM_001123385.2 | unannotated intron                   | intergenic        | unannotated intergenic junction                          | NA     | unknown; within alternate intron 1 - & intergenic (mis-map warning) |
 			| chrX  | 40115468 | 40117489 | +      | sj   | NM_001123385.2 | unannotated intron                   | intergenic        | unannotated intergenic junction                          | NA     | unknown; within alternate intron 1 - (genuine splicing?)            |
