@@ -122,7 +122,7 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 		Given a skip-cryp event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
 		And the annotation dataset to be used for annotating skip-cryps is refseq
 		When the skip-cryp events are annotated with the annotation dataset
-		Then the resulting annotations of skip-cryps should be event <event>
+		Then the resulting annotations of skip-cryps should be event <event> of location <location> and type <event_type> at intron <intron> at a distance of <distance_from_authentic>
 
 		Examples:
 			| chrom | start    | end      | strand | type | transcript     | event_type                      | location | distance_from_authentic | event                                               | intron     | comment                                   |
@@ -132,9 +132,9 @@ Feature: Annotate events in cortar data using RefSeq Curated Annotations
 			| chrX  | 53243517 | 53248720 | -      | sj   | NM_001111125.3 | exon skipping, cryptic acceptor | intronic | -46                     | exon 7-8 skipping/cryptic intron 8 acceptor @ -46   | 6, 7, 8    | double skipping/cryptic intronic acceptor |
 			| chrX  | 53243419 | 53248720 | -      | sj   | NM_001111125.3 | exon skipping, cryptic acceptor | exonic   | +53                     | exon 7-8 skipping/cryptic exon 9 acceptor @ +53     | 6, 7, 8    | double skipping/cryptic exonic acceptor   |
 			| chr9  | 34647259 | 34647892 | +      | sj   | NM_000155.4    | exon skipping, cryptic acceptor | exonic   | +61                     | exon 3-4 skipping/cryptic exon 5 acceptor @ +61     | 2, 3, 4    | double skipping/cryptic exonic acceptor   |
-			| chrX  | 53243472 | 53248044 | -      | sj   | NM_001111125.3 | exon skipping, cryptic donor    | intronic | +70                     | exon 8 skipping/cryptic intron 7 donor @ +70        | 7, 8, 9    | single skipping/cryptic intronic donor    |
-			| chr9  | 34647601 | 34647831 | +      | sj   | NM_000155.4    | exon skipping, cryptic donor    | intronic | +34                     | exon 4 skipping/cryptic intron 3 donor @ +34        | 7, 8, 9    | single skipping/cryptic intronic donor    |
-			| chrX  | 53243472 | 53248139 | -      | sj   | NM_001111125.3 | exon skipping, cryptic donor    | exonic   | -26                     | exon 8 skipping/cryptic exon 7 donor @ -26          | 7, 8, 9    | single skipping/cryptic exonic donor      |
+			| chrX  | 53243472 | 53248044 | -      | sj   | NM_001111125.3 | exon skipping, cryptic donor    | intronic | +70                     | exon 8 skipping/cryptic intron 7 donor @ +70        | 7, 8       | single skipping/cryptic intronic donor    |
+			| chr9  | 34647601 | 34647831 | +      | sj   | NM_000155.4    | exon skipping, cryptic donor    | intronic | +34                     | exon 4 skipping/cryptic intron 3 donor @ +34        | 3, 4       | single skipping/cryptic intronic donor    |
+			| chrX  | 53243472 | 53248139 | -      | sj   | NM_001111125.3 | exon skipping, cryptic donor    | exonic   | -26                     | exon 8 skipping/cryptic exon 7 donor @ -26          | 7, 8       | single skipping/cryptic exonic donor      |
 			| chrX  | 41198618 | 41205302 | +      | sj   | NM_001039591.3 | exon skipping, cryptic donor    | exonic   | -133                    | exon 31 skipping/cryptic exon 30 donor @ -133       | 30, 31     | single skipping/cryptic exonic donor      |
 			| chrX  | 53235185 | 53236474 | -      | sj   | NM_001111125.3 | exon skipping, cryptic donor    | exonic   | -153                    | exon 14 skipping/cryptic exon 13 donor @ -153       | 13, 14     | single skipping/cryptic exonic donor      |
 

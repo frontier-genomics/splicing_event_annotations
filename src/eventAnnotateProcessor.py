@@ -34,11 +34,19 @@ class EventAnnotate:
         end = self.coordinates['start']
         strand = self.coordinates['strand']
 
-        matching_rows = transcripts[
+        matching_rows_start = transcripts[
             (transcripts['chrom'] == chrom) &
             (transcripts['start'] <= start) &
+            (transcripts['end'] >= start)
+        ]
+
+        matching_rows_end = transcripts[
+            (transcripts['chrom'] == chrom) &
+            (transcripts['start'] <= end) &
             (transcripts['end'] >= end)
         ]
+
+        matching_rows = pd.concat([matching_rows_start, matching_rows_end]).drop_duplicates()
 
         if matching_rows.empty:
             print("no MANE transcript match found")
@@ -81,8 +89,6 @@ class EventAnnotate:
         return {"transcript": transcript,
                 "gene": gene,
                 "warning": warning}
-
-
 
     def reference_match(self, start_end, base=1):
         """
@@ -160,7 +166,6 @@ class EventAnnotate:
         return {'event': f"{alternate}{supplementary_event}{cryptic}{location}{event}{direction}{distance}{alternate_event}",
                 'event_type': event_type,
                 'introns': introns}
-
 
     def fetch_transcript_annotations(self, start_matches_all_tx, end_matches_all_tx):
         transcript = self.coordinates['transcript']
@@ -258,7 +263,6 @@ class EventAnnotate:
                 else:
                     return {'alternate': '', 'alternate_event': ""}
 
-
     def _annotate_cryptic(self, start_end, var_position, matches):
         #Set cryptic to cryptic
         cryptic = "cryptic "
@@ -288,11 +292,17 @@ class EventAnnotate:
 
             introns = [int(within_tx_intron['intron'].unique()), int(matches['intron'].unique())]
 
+            location = f"intron {int(introns[0])} "
+
             if introns[0] != introns[1]:
                 print("but event spans multiple introns")
-                supp_event = self._annotate_supplementary(introns)
+                supp = self._annotate_supplementary(introns)
+                supp_event = supp['event']
+                supp_event_type = supp["supp_event_type"]
+                introns[0] = supp['introns']
             else:
-                supp_event = ""    
+                supp_event = ""
+                supp_event_type = ""    
 
             if start_end == "start":
                 if strand == "+":
@@ -316,8 +326,6 @@ class EventAnnotate:
 
             #Set direction        
             direction = " @ +" if distance > 0 else " @ "
-            
-            location = f"intron {int(introns[0])} "
 
             return {'event': event,
                     'cryptic': cryptic,
@@ -326,7 +334,7 @@ class EventAnnotate:
                     'distance': distance,
                     'direction': direction,
                     'alternate': "",
-                    'event_type': f"{cryptic}{event}",
+                    'event_type': f"{supp_event_type}{cryptic}{event}",
                     'introns': introns[0]}
             
         else:
@@ -363,23 +371,25 @@ class EventAnnotate:
 
                 print(event)
 
+                location = f"exon {introns[0]} "
+
                 if introns[0] != introns[1] and introns[0] != introns[1]+1 :
                     print("but event spans multiple introns")
                     if event == 'acceptor':
                         introns[0] = introns[0] - 1
-                    supp_event = self._annotate_supplementary(introns)
-                    if event == 'acceptor':
-                        introns[0] = introns[0] + 1
+                    supp = self._annotate_supplementary(introns)
+                    supp_event = supp['event']
+                    supp_event_type = supp["supp_event_type"]
+                    introns[0] = supp['introns']
+
                 else:
                     supp_event = ""   
+                    supp_event_type = ""
+                    if event == 'acceptor':
+                        introns[0] = introns[0] - 1
 
                 #Set direction        
                 direction = " @ +" if distance > 0 else " @ "
-
-                location = f"exon {int(introns[0])} "
-
-                if event == 'acceptor':
-                    introns[0] = introns[0] - 1
 
                 return {'event': event,
                         'cryptic': cryptic,
@@ -388,7 +398,7 @@ class EventAnnotate:
                         'distance': distance,
                         'direction': direction,
                         'alternate': "",
-                        'event_type': f"{cryptic}{event}",
+                        'event_type': f"{supp_event_type}{cryptic}{event}",
                         'introns': introns[0]}
         
             else:
@@ -623,5 +633,8 @@ class EventAnnotate:
     
     def _annotate_supplementary(self, introns):
         event = f"exon {'-'.join(str(i) for i in range(min(introns)+1, max(introns)+1))} skipping/"
+        introns = f"{', '.join(str(i) for i in range(min(introns), max(introns)+1))}"
 
-        return event
+        return {'event': event,
+                'supp_event_type': 'exon skipping, ',
+                'introns': introns}
