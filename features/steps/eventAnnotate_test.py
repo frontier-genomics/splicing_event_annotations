@@ -12,7 +12,7 @@ def step_impl(context, chrom, start, end, strand):
             'start': start,
             'end': end,
             'strand': strand,
-            'transcript': "",
+            'transcript': "NA",
             'type': ""
         }
 

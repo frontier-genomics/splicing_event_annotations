@@ -13,6 +13,11 @@ class EventAnnotate:
             'type': str(type)
         }
 
+        print(f"the current transcript for this event is {self.coordinates['transcript']}")
+
+        if self.coordinates['transcript'] == "NA":
+            self.coordinates['transcript'] = self.get_mane_transcript()['transcript']
+
     def get_annotations(self, annotation_choice):
         if annotation_choice == "refseq":
             self.annotation = pd.read_csv("resources/annotations/refseq_curated_introns_sorted.tsv", sep='\t')
@@ -85,6 +90,7 @@ class EventAnnotate:
                 gene = "unknown"
                 warning = "Multiple overlapping MANE transcripts found on opposite strand only. Unable to assign."
 
+        print(f"MANE match: {transcript}")
         return {"transcript": transcript,
                 "gene": gene,
                 "warning": warning}
