@@ -3,7 +3,7 @@ import numpy as np
 
 class EventAnnotate:
 
-    def __init__(self, chrom, start, end, strand, transcript, type, annotation_choice):
+    def __init__(self, chrom, start, end, strand, transcript, type):
         self.coordinates = {
             'chrom': str(chrom),
             'start': np.int64(start),
@@ -12,13 +12,13 @@ class EventAnnotate:
             'transcript': str(transcript),
             'type': str(type)
         }
-        self.annotation_choice = annotation_choice
 
-    def get_annotations(self):
-        if self.annotation_choice == "refseq":
+# take annotation choice out of init and put it in get_annotations
+    def get_annotations(self, annotation_choice):
+        if annotation_choice == "refseq":
             self.annotation = pd.read_csv("resources/annotations/refseq_curated_introns_sorted.tsv", sep='\t')
             self.exons = pd.read_csv("resources/annotations/refseq_curated_exons_sorted.tsv", sep='\t')
-        elif self.annotation_choice == "ensembl":
+        elif annotation_choice == "ensembl":
             raise ValueError("Ensembl annotations are currently not supported. Please try again with 'refseq'.")
         else:
             raise ValueError("Invalid annotation choice. Please select either 'refseq' or 'ensembl' (currently not supported).")
@@ -140,6 +140,7 @@ class EventAnnotate:
         cryptic = annotation['cryptic']
         supplementary_event = annotation['supplementary_event']
         location = annotation['location']
+        location_raw = location
         distance = annotation['distance']
         distance_raw = distance
         direction = annotation['direction']
@@ -162,6 +163,10 @@ class EventAnnotate:
             distance_raw = "NA"
             distance = ""
 
+        if location == "NA":
+            location_raw = "NA"
+            location = ""
+
         print(cryptic)
         print(supplementary_event)
         print(location)
@@ -174,7 +179,8 @@ class EventAnnotate:
         return {'event': f"{alternate}{supplementary_event}{cryptic}{location}{event}{direction}{distance}{alternate_event}",
                 'event_type': event_type,
                 'introns': introns,
-                'distance_raw': distance_raw}
+                'location': location_raw.strip(),
+                'distance_from_authentic': distance_raw}
 
     def fetch_transcript_annotations(self, start_matches_all_tx, end_matches_all_tx):
         transcript = self.coordinates['transcript']
@@ -668,8 +674,8 @@ class EventAnnotate:
                 'cryptic': "",
                 'supplementary_event': "",
                 'supp_event_type': "",
-                'location': "",
-                'distance': "",
+                'location': "NA",
+                'distance': "NA",
                 'direction': "",
                 'alternate': "",
                 'event_type': event_type,
