@@ -1,6 +1,10 @@
 from behave import given, when, then
 from src.eventAnnotateProcessor import EventAnnotate
 
+
+
+# Fetch the MANE transcript for a splicing event
+
 @given(u'a splicing event with chrom {chrom}, start {start}, end {end}, and strand {strand}')
 def step_impl(context, chrom, start, end, strand):
     context.input = {
@@ -37,53 +41,6 @@ def step_impl(context, transcript, gene, warning):
     assert context.transcript['gene'] == gene
     assert context.transcript['warning'] == warning
     
-
-
-
-
-
-@given(u'another splicing event with chrom {chrom}, start {start}, end {end}, strand {strand}, transcript {transcript}, and type {type}')
-def step_impl(context, chrom, start, end, strand, transcript, type):
-    context.input = {
-            'chrom': chrom,
-            'start': start,
-            'end': end,
-            'strand': strand,
-            'transcript': transcript,
-            'type': type
-        }
-    
-@given(u'the selected transcript annotation is {annotation}')
-def step_impl(context, annotation):
-    context.input['annotation'] = annotation
-
-@when(u'the splicing events are annotated with the curated annotations')
-def step_impl(context):
-    context.annotation = EventAnnotate(
-        chrom = context.input['chrom'],
-        start = context.input['start'],
-        end = context.input['end'],
-        strand = context.input['strand'],
-        transcript = context.input['transcript'],
-        type = context.input['type'],
-    )
-    context.annotation.get_annotations(context.input['annotation'])
-    context.start = context.annotation.reference_match('start')
-    context.end = context.annotation.reference_match('end')
-    
-    print(context.input["start"])
-    print(context.input["end"])
-    print(context.start)
-    print(context.end)
-    
-    context.create_annotations = context.annotation.fetch_transcript_annotations(context.start, context.end)
-    
-
-@then(u'the resulting annotations should be event {event}')
-def step_impl(context, event):
-    print(str(context.create_annotations))
-    print(event)
-    assert str(context.create_annotations) == event, f"Expected event: {event}, but got: {str(context.create_annotations)}"
 
 
 # CANONICAL SPLICING
@@ -189,6 +146,7 @@ def step_impl(context, event, event_type, intron):
     assert str(context.create_annotations['introns']) == intron, f"Expected event: {intron}, but got: {context.create_annotations['introns']}"
 
 
+
 # INTRON RETENTION
 
 @given(u'an intron retention event with chrom {chrom}, start {start}, end {end}, strand {strand}, transcript {transcript}, and type {type}')
@@ -239,7 +197,8 @@ def step_impl(context, event, event_type, intron):
     assert str(context.create_annotations['introns']) == intron, f"Expected event: {intron}, but got: {context.create_annotations['introns']}"
 
 
-# CRYPTIC DONOR
+
+# CRYPTIC DONORS
 
 @given(u'a cryptic donor event with chrom {chrom}, start {start}, end {end}, strand {strand}, transcript {transcript}, and type {type}')
 def step_impl(context, chrom, start, end, strand, transcript, type):
@@ -352,6 +311,7 @@ def step_impl(context, event, event_type, intron, location, distance_from_authen
     assert str(context.create_annotations['distance_from_authentic']) == distance_from_authentic, f"Expected event: {distance_from_authentic}, but got: {context.create_annotations['distance_from_authentic']}"
 
 
+
 # SKIPPING WITH A CRYPTIC (SKIP CRYPS)
 
 @given(u'a skip-cryp event with chrom {chrom}, start {start}, end {end}, strand {strand}, transcript {transcript}, and type {type}')
@@ -408,6 +368,7 @@ def step_impl(context, event, event_type, intron, location, distance_from_authen
     assert str(context.create_annotations['distance_from_authentic']) == distance_from_authentic, f"Expected event: {distance_from_authentic}, but got: {context.create_annotations['distance_from_authentic']}"
 
 
+
 # UNANNOTATED JUNCTIONS
 
 @given(u'an unannotated junction with chrom {chrom}, start {start}, end {end}, strand {strand}, transcript {transcript}, and type {type}')
@@ -456,6 +417,7 @@ def step_impl(context, event, event_type, intron, location):
     assert str(context.create_annotations['event']) == event, f"Expected event: {event}, but got: {str(context.create_annotations['event'])}"
     assert str(context.create_annotations['event_type']) == event_type, f"Expected event: {event_type}, but got: {str(context.create_annotations['event_type'])}"
     assert str(context.create_annotations['introns']) == intron, f"Expected event: {intron}, but got: {context.create_annotations['introns']}"
+
 
 
 # ALTERNATE SPLICING

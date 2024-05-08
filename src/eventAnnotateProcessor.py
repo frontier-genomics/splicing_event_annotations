@@ -13,7 +13,6 @@ class EventAnnotate:
             'type': str(type)
         }
 
-# take annotation choice out of init and put it in get_annotations
     def get_annotations(self, annotation_choice):
         if annotation_choice == "refseq":
             self.annotation = pd.read_csv("resources/annotations/refseq_curated_introns_sorted.tsv", sep='\t')
