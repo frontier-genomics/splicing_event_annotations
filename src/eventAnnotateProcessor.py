@@ -141,18 +141,26 @@ class EventAnnotate:
         supplementary_event = annotation['supplementary_event']
         location = annotation['location']
         distance = annotation['distance']
+        distance_raw = distance
         direction = annotation['direction']
         introns = annotation['introns']
         event_type = annotation['event_type']
+        supp_event_type = annotation['supp_event_type']
 
         if cryptic not in ['canonical ', 'intron ']:
             alternate = self._is_alternate_splicing(start_matches, end_matches)['alternate']
             alternate_event = self._is_alternate_splicing(start_matches, end_matches)['alternate_event']
             if alternate == "alternate ":
                 cryptic = ""
+            event_type = f"{alternate}{supp_event_type}{cryptic}{event_type}"
+
         else:
             alternate = ""
             alternate_event = ""
+
+        if distance == "NA":
+            distance_raw = "NA"
+            distance = ""
 
         print(cryptic)
         print(supplementary_event)
@@ -165,7 +173,8 @@ class EventAnnotate:
 
         return {'event': f"{alternate}{supplementary_event}{cryptic}{location}{event}{direction}{distance}{alternate_event}",
                 'event_type': event_type,
-                'introns': introns}
+                'introns': introns,
+                'distance_raw': distance_raw}
 
     def fetch_transcript_annotations(self, start_matches_all_tx, end_matches_all_tx):
         transcript = self.coordinates['transcript']
@@ -330,11 +339,12 @@ class EventAnnotate:
             return {'event': event,
                     'cryptic': cryptic,
                     'supplementary_event': supp_event,
+                    'supp_event_type': supp_event_type,
                     'location': location,
                     'distance': distance,
                     'direction': direction,
                     'alternate': "",
-                    'event_type': f"{supp_event_type}{cryptic}{event}",
+                    'event_type': event,
                     'introns': introns[0]}
             
         else:
@@ -394,11 +404,12 @@ class EventAnnotate:
                 return {'event': event,
                         'cryptic': cryptic,
                         'supplementary_event': supp_event,
+                        'supp_event_type': supp_event_type,
                         'location': location,
                         'distance': distance,
                         'direction': direction,
                         'alternate': "",
-                        'event_type': f"{supp_event_type}{cryptic}{event}",
+                        'event_type': event,
                         'introns': introns[0]}
         
             else:
@@ -423,12 +434,15 @@ class EventAnnotate:
                 direction = " @ +" if distance > 0 else " @ "
 
                 return {'event': event,
-                        'cryptic': "",
+                        'cryptic': 'cryptic',
                         'supplementary_event': "",
+                        'supp_event_type': "",
                         'location': location,
                         'distance': distance,
                         'direction': direction,
-                        'alternate': ""}
+                        'alternate': "",
+                        'event_type': event,
+                        'introns': "NA"}
             
     def _annotate_unannotated(self):
         tx = self.coordinates['transcript']
@@ -454,10 +468,13 @@ class EventAnnotate:
             return {'event': f"junction{strand_in}",
                     'cryptic': "unannotated ",
                     'supplementary_event': "",
+                    'supp_event_type': "",
                     'location': "intronic ",
-                    'distance': "",
+                    'distance': "NA",
                     'direction': "",
-                    'alternate': ""}
+                    'alternate': "",
+                    'event_type': f"intron{strand_in}",
+                    'introns': "NA"}
         
         elif not within_tx_intron_start.empty and within_tx_intron_end.empty:
             print("only start is within intron")
@@ -473,18 +490,24 @@ class EventAnnotate:
                 return {'event': f"junction{strand_in}",
                     'cryptic': "unannotated ",
                     'supplementary_event': "",
+                    'supp_event_type': "",
                     'location': "intronic/exonic ",
-                    'distance': "",
+                    'distance': "NA",
                     'direction': "",
-                    'alternate': ""}
+                    'alternate': "",
+                    'event_type': f"intron{strand_in}",
+                    'introns': "NA"}
             else:
                 return {'event': f"junction{strand_in}",
                     'cryptic': "unannotated ",
                     'supplementary_event': "",
+                    'supp_event_type': "",
                     'location': "intergenic/intronic ",
-                    'distance': "",
+                    'distance': "NA",
                     'direction': "",
-                    'alternate': ""}
+                    'alternate': "",
+                    'event_type': f"intron{strand_in}",
+                    'introns': "NA"}
         
         elif within_tx_intron_start.empty and not within_tx_intron_end.empty:
             print("only end is within intron")
@@ -502,18 +525,24 @@ class EventAnnotate:
                 return {'event': f"junction{strand_in}",
                     'cryptic': "unannotated ",
                     'supplementary_event': "",
+                    'supp_event_type': "",
                     'location': "intronic/exonic ",
-                    'distance': "",
+                    'distance': "NA",
                     'direction': "",
-                    'alternate': ""}
+                    'alternate': "",
+                    'event_type': f"intron{strand_in}",
+                    'introns': "NA"}
             else:
                 return {'event': f"junction{strand_in}",
                     'cryptic': "unannotated ",
                     'supplementary_event': "",
+                    'supp_event_type': "",
                     'location': "intergenic/intronic ",
-                    'distance': "",
+                    'distance': "NA",
                     'direction': "",
-                    'alternate': ""}
+                    'alternate': "",
+                    'event_type': f"intron{strand_in}",
+                    'introns': "NA"}
             
         else:
             within_tx_exon_start = self.exons[
@@ -538,10 +567,13 @@ class EventAnnotate:
                 return {'event': f"junction{strand_in}",
                     'cryptic': "unannotated ",
                     'supplementary_event': "",
+                    'supp_event_type': "",
                     'location': "exonic ",
-                    'distance': "",
+                    'distance': "NA",
                     'direction': "",
-                    'alternate': ""}
+                    'alternate': "",
+                    'event_type': f"intron{strand_in}",
+                    'introns': "NA"}
         
             elif not within_tx_exon_start.empty and within_tx_exon_end.empty:
                 print("only start is within exon")
@@ -552,10 +584,13 @@ class EventAnnotate:
                 return {'event': f"junction{strand_in}",
                     'cryptic': "unannotated ",
                     'supplementary_event': "",
+                    'supp_event_type': "",
                     'location': "intergenic/exonic ",
-                    'distance': "",
+                    'distance': "NA",
                     'direction': "",
-                    'alternate': ""}
+                    'alternate': "",
+                    'event_type': f"intron{strand_in}",
+                    'introns': "NA"}
 
             # might be overkill to check for both start and end separately
             elif within_tx_exon_start.empty and not within_tx_exon_end.empty:
@@ -567,19 +602,25 @@ class EventAnnotate:
                 return {'event': f"junction{strand_in}",
                     'cryptic': "unannotated ",
                     'supplementary_event': "",
+                    'supp_event_type': "",
                     'location': "intergenic/exonic ",
-                    'distance': "",
+                    'distance': "NA",
                     'direction': "",
-                    'alternate': ""}
+                    'alternate': "",
+                    'event_type': f"intron{strand_in}",
+                    'introns': "NA"}
             
             else:
                 return {'event': "junction",
                     'cryptic': "unannotated ",
                     'supplementary_event': "",
+                    'supp_event_type': "",
                     'location': "intergenic ",
-                    'distance': "",
+                    'distance': "NA",
                     'direction': "",
-                    'alternate': ""}
+                    'alternate': "",
+                    'event_type': "intron",
+                    'introns': "NA"}
 
     def _annotate_intron_retention(self, start_intron):
         intron = start_intron[0]
@@ -590,6 +631,7 @@ class EventAnnotate:
         return {'event': event,
                 'cryptic': cryptic,
                 'supplementary_event': "",
+                'supp_event_type': "",
                 'location': "",
                 'distance': "",
                 'direction': "",
@@ -606,6 +648,7 @@ class EventAnnotate:
         return {'event': event,
                 'cryptic': cryptic,
                 'supplementary_event': "",
+                'supp_event_type': "",
                 'location': "",
                 'distance': "",
                 'direction': "",
@@ -624,6 +667,7 @@ class EventAnnotate:
         return {'event': event,
                 'cryptic': "",
                 'supplementary_event': "",
+                'supp_event_type': "",
                 'location': "",
                 'distance': "",
                 'direction': "",
