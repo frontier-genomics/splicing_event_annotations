@@ -3,7 +3,7 @@ import numpy as np
 
 class EventAnnotate:
 
-    def __init__(self, chrom, start, end, strand, transcript, type):
+    def __init__(self, chrom, start, end, strand, transcript, type, dataset):
         self.coordinates = {
             'chrom': str(chrom),
             'start': np.int64(start),
@@ -17,6 +17,17 @@ class EventAnnotate:
 
         if self.coordinates['transcript'] == "NA":
             self.coordinates['transcript'] = self.get_mane_transcript()['transcript']
+
+        self.get_annotations(dataset)
+        start = self.reference_match('start')
+        end = self.reference_match('end')
+
+        annotations = self.fetch_transcript_annotations(start, end)
+        self.event = annotations['event']
+        self.event_type = annotations['event_type']
+        self.introns = annotations['introns']
+        self.location = annotations['location']
+        self.distance_from_authentic = annotations['distance_from_authentic']
 
     def get_annotations(self, annotation_choice):
         if annotation_choice == "refseq":
