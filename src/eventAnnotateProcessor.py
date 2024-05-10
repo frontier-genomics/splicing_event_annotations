@@ -1,5 +1,8 @@
 import pandas as pd
 import numpy as np
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 class EventAnnotate:
 
@@ -18,7 +21,7 @@ class EventAnnotate:
         if self.coordinates['transcript'] == "NA":
             self.coordinates['transcript'] = self.get_mane_transcript()['transcript']
 
-        self.get_annotations(dataset)
+        self.read_refgene(dataset)
         start = self.reference_match('start')
         end = self.reference_match('end')
 
@@ -132,14 +135,11 @@ class EventAnnotate:
 
         chrom = self.coordinates['chrom']
 
-        matching_rows = self.annotation[
-            (self.annotation[start_end] == query) &
-            (self.annotation['chrom'] == chrom)
-        ]
-        
-        matching_rows['start'] = matching_rows['start'] + base
-        match = pd.DataFrame(matching_rows)
-        return match
+        print(query)
+
+        matching_rows = [entry for entry in self.refgene if entry['start'] <= query and entry['end'] >= query and entry['chrom'] == chrom]
+
+        return matching_rows
     
     def _produce_annotation(self, annotation, start_matches, end_matches):
         """
@@ -202,24 +202,27 @@ class EventAnnotate:
         transcript = self.coordinates['transcript']
         print(transcript)
 
-        start_matches = start_matches_all_tx[start_matches_all_tx['transcript'] == transcript]
-        end_matches = end_matches_all_tx[end_matches_all_tx['transcript'] == transcript]
+        start_matches = [entry for entry in start_matches_all_tx if entry['id'] <= transcript]
+        end_matches = [entry for entry in end_matches_all_tx if entry['id'] <= transcript]
+
+        start_intron = self.coordinates['start']
+        end_intron = self.coordinates['end']
 
         print(f"matching starts are \n{start_matches}")
         print(f"matching ends are \n{end_matches}")
 
-        if end_matches.empty and start_matches.empty:
+        if not end_matches and not start_matches:
             print("no start or end matches for transcript")
             annotation_dict = self._annotate_unannotated()
             return self._produce_annotation(annotation_dict, start_matches_all_tx, end_matches_all_tx)
         
-        elif start_matches.empty or end_matches.empty:
-            if end_matches.empty:
+        elif not start_matches or not end_matches:
+            if not end_matches:
                 print("start matches")
                 annotation_dict = self._annotate_cryptic('end', self.coordinates['end'], start_matches)
                 return self._produce_annotation(annotation_dict, start_matches_all_tx, end_matches_all_tx)
             
-            elif start_matches.empty:
+            elif not start_matches:
                 print("end matches")
                 annotation_dict = self._annotate_cryptic('start', self.coordinates['start'], end_matches)
                 return self._produce_annotation(annotation_dict, start_matches_all_tx, end_matches_all_tx)
@@ -705,8 +708,6 @@ class EventAnnotate:
                 'supp_event_type': 'exon skipping, ',
                 'introns': introns}
     
-
-
     def read_refgene(self, dataset):
         if dataset == "refseq":
             input_file = "reference/genes.refGene"
@@ -716,7 +717,6 @@ class EventAnnotate:
             raise ValueError("Invalid annotation choice. Please select either 'refseq' or 'ensembl' (currently not supported).")
         
         self.refgene = self.read_genepred(input_file, skip_first_column=True)
-
 
     def read_genepred(self, input_file, skip_first_column=False):
         """
@@ -754,7 +754,7 @@ class EventAnnotate:
                 exons = list(zip(exon_starts, exon_ends))
                         
                 data = {
-                    'chrom': row[1],
+                    'chrom': f"chr{row[1]}",
                     'start': int(row[3]),
                     'end': int(row[4]),
                     'id': row[0],
