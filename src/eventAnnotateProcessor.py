@@ -704,3 +704,67 @@ class EventAnnotate:
         return {'event': event,
                 'supp_event_type': 'exon skipping, ',
                 'introns': introns}
+    
+
+
+    def read_refgene(self, dataset):
+        if dataset == "refseq":
+            input_file = "reference/genes.refGene"
+        elif dataset == "ensembl":
+            raise ValueError("Ensembl annotations are currently not supported. Please try again with 'refseq'.")
+        else:
+            raise ValueError("Invalid annotation choice. Please select either 'refseq' or 'ensembl' (currently not supported).")
+        
+        self.refgene = self.read_genepred(input_file, skip_first_column=True)
+
+
+    def read_genepred(self, input_file, skip_first_column=False):
+        """
+        GenePred extension format:
+        http://genome.ucsc.edu/FAQ/FAQformat.html#GenePredExt
+
+        Column definitions:
+        0. string name;                 "Name of gene (usually transcript_id from GTF)"
+        1. string chrom;                "Chromosome name"
+        2. char[1] strand;              "+ or - for strand"
+        3. uint txStart;                "Transcription start position"
+        4. uint txEnd;                  "Transcription end position"
+        5. uint cdsStart;               "Coding region start"
+        6. uint cdsEnd;                 "Coding region end"
+        7. uint exonCount;              "Number of exons"
+        8. uint[exonCount] exonStarts;  "Exon start positions"
+        9. uint[exonCount] exonEnds;    "Exon end positions"
+        10. uint id;                    "Unique identifier"
+        11. string name2;               "Alternate name (e.g. gene_id from GTF)"
+        """
+
+        dataset = []
+
+        with open(input_file, 'r') as infile:
+            for line in infile:
+                # Skip comments.
+                if line.startswith('#'):
+                    continue
+                row = line.rstrip('\n').split('\t')
+                if skip_first_column:
+                    row = row[1:]
+                # Skip trailing ,
+                exon_starts = list(map(int, row[8].split(',')[:-1]))
+                exon_ends = list(map(int, row[9].split(',')[:-1]))
+                exons = list(zip(exon_starts, exon_ends))
+                        
+                data = {
+                    'chrom': row[1],
+                    'start': int(row[3]),
+                    'end': int(row[4]),
+                    'id': row[0],
+                    'strand': row[2],
+                    'cds_start': int(row[5]),
+                    'cds_end': int(row[6]),
+                    'gene_name': row[11],
+                    'exons': exons,
+                    'mane': row[15]
+                }
+                dataset.append(data)
+
+        return dataset
