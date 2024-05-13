@@ -109,7 +109,7 @@ class EventAnnotate:
                 "gene": gene,
                 "warning": warning}
 
-    def reference_match(self, start_end, base=1):
+    def reference_match(self, start_end):
         """
         Finds a reference match for the given start_end position.
 
@@ -129,7 +129,7 @@ class EventAnnotate:
             raise ValueError("Invalid start_end choice. Please select either 'start' or 'end'.")
 
         if start_end == "start":
-            query = self.coordinates[start_end] - base
+            query = self.coordinates[start_end]
         elif start_end == "end":
             query = self.coordinates[start_end]
 
@@ -139,25 +139,48 @@ class EventAnnotate:
 
         matching_rows = [entry for entry in self.refgene if entry['start'] <= query and entry['end'] >= query and entry['chrom'] == chrom]
 
-        print(self.get_exon_intron(matching_rows, query))
+        region_information = self.get_exon_intron(matching_rows, query)
 
-        return matching_rows
+        return {'matching_rows': matching_rows,
+                'region_information': region_information
+                }
     
-    def get_exon_intron(self, matching_rows, query):
-        indices = matching_rows[0]['exons']
-        exons = len(indices)
-        for i in range(len(indices)-1):
-            if indices[i] <= query <= indices[i+1]:
-                print(f"The query falls between indices {i} and {i+1} (0-based)")
-                break
+    def get_exon_intron(self, matching_rows, query, base = 0):
+        region_dict = {}
+        for transcript in matching_rows:
+            tx_id = transcript['id']
+            indices = transcript['exons']
+            strand = transcript['strand']
+            
+            no_of_exons = len(indices)
 
-        if i % 2 != 0:
-            print(f"{i} is an odd number")
-            print("the region is an intron")
-        else:
-            print(f"{i} is an even number")
-            print("the region is an exon")
+            for i in range(len(indices)-1):
+                if indices[i] <= query <= indices[i+1]:
+                    index_match = i
+                    index_position_start = indices[i]
+                    index_position_end = indices[i+1]
+                    match = False
+                    break
 
+            if index_match % 2 != 0:
+                region_type = "intron"
+                match = query == index_position_start+1 or query == index_position_end
+            else:
+                region_type = "exon"
+
+            if strand == "-":
+                region_number = int((no_of_exons - index_match) / 2).__floor__()
+                print(f"\tthe region is {region_type} {region_number}")
+            else:
+                region_number = int((index_match) / 2 + 1).__floor__()
+                print(f"\tthe region is {region_type} {region_number}")
+
+            region_dict[tx_id] = {'transcript': tx_id,
+                                  'region_type': region_type,
+                                  'region_number': region_number,
+                                  'match': match}
+
+        return region_dict
 
     def _produce_annotation(self, annotation, start_matches, end_matches):
         """
@@ -183,8 +206,9 @@ class EventAnnotate:
         supp_event_type = annotation['supp_event_type']
 
         if cryptic not in ['canonical ', 'intron ']:
-            alternate = self._is_alternate_splicing(start_matches, end_matches)['alternate']
-            alternate_event = self._is_alternate_splicing(start_matches, end_matches)['alternate_event']
+            alternate_results = self._is_alternate_splicing(start_matches, end_matches)
+            alternate = alternate_results['alternate']
+            alternate_event = alternate_results['alternate_event']
             if alternate == "alternate ":
                 cryptic = ""
             event_type = f"{alternate}{supp_event_type}{cryptic}{event_type}"
@@ -220,62 +244,102 @@ class EventAnnotate:
         transcript = self.coordinates['transcript']
         print(transcript)
 
-        start_matches = [entry for entry in start_matches_all_tx if entry['id'] <= transcript]
-        end_matches = [entry for entry in end_matches_all_tx if entry['id'] <= transcript]
+        start_matches_all = start_matches_all_tx['matching_rows']
+        end_matches_all = end_matches_all_tx['matching_rows']
 
-        start_intron = self.coordinates['start']
-        end_intron = self.coordinates['end']
+        start_matches = [entry for entry in start_matches_all_tx['matching_rows'] if entry['id'] == transcript]
+        end_matches = [entry for entry in end_matches_all_tx['matching_rows'] if entry['id'] == transcript]
+
+        start_region = start_matches_all_tx['region_information'][transcript]
+        end_region = end_matches_all_tx['region_information'][transcript]
+
+        start_match = start_region['match']
+        end_match = end_region['match']
+
+        start_region_all = start_matches_all_tx['region_information']
+        end_region_all = end_matches_all_tx['region_information']
+
+        print(f"Junction start in {start_matches[0]['id']} in {start_region['region_type']} {start_region['region_number']}")
+        print(f"Junction end in {end_matches[0]['id']} in {end_region['region_type']} {end_region['region_number']}")
+
+        if start_match:
+            print("The start is annotated")
+        else:
+            print("The start is not annotated")
+
+        if end_match:
+            print("The end is annotated")
+        else:
+            print("The end is not annotated")
 
         print(f"matching starts are \n{start_matches}")
         print(f"matching ends are \n{end_matches}")
 
+        print(f"start region is {start_region}")
+        print(f"end region is {end_region}")
+
+
         if not end_matches and not start_matches:
             print("no start or end matches for transcript")
             annotation_dict = self._annotate_unannotated()
-            return self._produce_annotation(annotation_dict, start_matches_all_tx, end_matches_all_tx)
+            return self._produce_annotation(annotation_dict, start_region_all, end_region_all)
         
-        elif not start_matches or not end_matches:
-            if not end_matches:
+        elif end_match == False or start_match == False:
+            if end_match == False:
                 print("start matches")
-                annotation_dict = self._annotate_cryptic('end', self.coordinates['end'], start_matches)
-                return self._produce_annotation(annotation_dict, start_matches_all_tx, end_matches_all_tx)
+                annotation_dict = self._annotate_cryptic('end', self.coordinates['end'], start_matches, start_region_all, end_region_all)
+                return self._produce_annotation(annotation_dict, start_region_all, end_region_all)
             
-            elif not start_matches:
+            elif start_match == False:
                 print("end matches")
-                annotation_dict = self._annotate_cryptic('start', self.coordinates['start'], end_matches)
-                return self._produce_annotation(annotation_dict, start_matches_all_tx, end_matches_all_tx)
+                annotation_dict = self._annotate_cryptic('start', self.coordinates['start'], end_matches, start_region_all, end_region_all)
+                return self._produce_annotation(annotation_dict, start_region_all, end_region_all)
 
         else:
             if self.coordinates['type'] == "ir":
                 print("splicing type is intron retention")
-                annotation_dict = self._annotate_intron_retention(start_matches['intron'].unique())
-                return self._produce_annotation(annotation_dict, start_matches_all_tx, end_matches_all_tx)
+                annotation_dict = self._annotate_intron_retention(start_region)
+                return self._produce_annotation(annotation_dict, start_region_all, end_region_all)
 
-            elif start_matches['intron'].unique() == end_matches['intron'].unique():
+            elif start_region['region_number'] == end_region['region_number']:
                 print("start and end introns are the same")
-                annotation_dict = self._annotate_canonical(start_matches['intron'].unique())
-                return self._produce_annotation(annotation_dict, start_matches_all_tx, end_matches_all_tx)
+                annotation_dict = self._annotate_canonical(start_region)
+                return self._produce_annotation(annotation_dict, start_region_all, end_region_all)
             
-            elif start_matches['intron'].unique() != end_matches['intron'].unique():
+            elif start_region['region_number'] != end_region['region_number']:
                 print("start and end introns are different")
-                annotation_dict = self._annotate_exon_skipping(start_matches['intron'].unique(), end_matches['intron'].unique())
-                return self._produce_annotation(annotation_dict, start_matches_all_tx, end_matches_all_tx)
+                annotation_dict = self._annotate_exon_skipping(start_region, end_region)
+                return self._produce_annotation(annotation_dict, start_region_all, end_region_all)
 
             return({'transcript': "unknown", 'event': "unknown event"})
 
     def _is_alternate_splicing(self, start_matches, end_matches):
         transcript = self.coordinates['transcript']
 
-        start_matches = start_matches[start_matches['transcript'] != transcript]
-        end_matches = end_matches[end_matches['transcript'] != transcript]
+        print(start_matches)
+        print(end_matches)
 
-        alternate_start_matches = start_matches.sort_values(by='transcript')
-        alternate_end_matches = end_matches.sort_values(by='transcript')
+        # start_matches = [entry for entry in start_matches if entry['id'] != transcript]
+        # end_matches = [entry for entry in end_matches if entry['id'] != transcript]
 
-        print(f"matching alternate starts are \n{alternate_start_matches}")
-        print(f"matching alternate ends are \n{alternate_end_matches}")
+        return {'alternate': '', 'alternate_event': ""}
 
-        if alternate_start_matches.empty or alternate_end_matches.empty:
+        start_match = [entry['match'] for entry in start_matches.values()]
+        end_match = [entry['match'] for entry in start_matches.values()]
+
+        print(transcript)
+        print(start_match)
+        print(end_match)
+
+        print("why you no print")
+
+        alternate_start_matches = [entry['match'] for entry in start_matches.values()]
+        alternate_end_matches =  [entry['match'] for entry in end_matches.values()]
+
+        print(f"matching alternate starts are \n{start_matches}")
+        print(f"matching alternate ends are \n{end_matches}")
+
+        if not alternate_start_matches or not alternate_end_matches:
             return {'alternate': '', 'alternate_event': ""}
         else:
             unique_start_transcripts = alternate_start_matches['transcript'].unique()
@@ -315,27 +379,100 @@ class EventAnnotate:
                 else:
                     return {'alternate': '', 'alternate_event': ""}
 
-    def _annotate_cryptic(self, start_end, var_position, matches):
+    def _annotate_cryptic(self, start_end, var_position, all_matches, start_region, end_region):
         #Set cryptic to cryptic
         cryptic = "cryptic "
         print("identified a cryptic")
 
         #Set event to acceptor/donor and calculate distance, based on strand
         strand = self.coordinates['strand']
-        start = self.coordinates['start']
-        end = self.coordinates['end']
+        query_start = self.coordinates['start']
+        query_end = self.coordinates['end']
 
         #Set location based on within_tx_intron and within_tx_exon
         transcript = self.coordinates['transcript']
+
+        matches = [entry for entry in all_matches if entry['id'] == transcript][0]            
+
+        start = start_region[transcript]
+        end = end_region[transcript]
+
+        print(start_end)
+
+        if start_end == "start":
+            location = f"{start['region_type']} {start['region_number']}"
+            other_location = f"{end['region_type']} {end['region_number']}"
+            position = matches['start']
+            introns = [start['region_number'], end['region_number']]
+        elif start_end == "end":
+            location = f"{end['region_type']} {end['region_number']}"
+            other_location = f"{start['region_type']} {start['region_number']}"
+            position = matches['end']
+            introns = [start['region_number'], end['region_number']]
+        
+        print(location)
+        print(position)
+
+        if location != other_location:
+            print("but event spans multiple introns")
+            supp = self._annotate_supplementary(introns)
+            supp_event = supp['event']
+            supp_event_type = supp["supp_event_type"]
+            introns[0] = supp['introns']
+        else:
+            supp_event = ""
+            supp_event_type = ""    
+        if start_end == "start":
+            if strand == "+":
+                event = "donor"
+                distance = query_start - position
+                print(f"The calculation is {query_start} - {position} = {distance}")
+            elif strand == "-":
+                event = "acceptor"
+                distance = position - query_start
+                print(f"The calculation is {position} - {query_start} = {distance}")
+        elif start_end == "end":
+            if strand == "+":
+                event = "acceptor"
+                distance = query_end - position - 1
+                print(f"The calculation is {query_end} - {position} - 1 = {distance}")
+            elif strand == "-":
+                event = "donor"
+                distance = position - query_end + 1
+                print(f"The calculation is {position} - {query_end} + 1 = {distance}")
+        print(event)
+
+        direction = " @ +" if distance > 0 else " @ "
+
+        # intronic acceptor
+        # intronic donor
+        # exonic acceptor
+        # exonic donor
+
+
+        return {'event': event,
+                'cryptic': cryptic,
+                'supplementary_event': supp_event,
+                'supp_event_type': supp_event_type,
+                'location': location,
+                'distance': distance,
+                'direction': direction,
+                'alternate': "",
+                'event_type': event,
+                'introns': introns[0]}
+
+
+
+
+
+
+
 
         within_tx_intron = self.annotation[(self.annotation['transcript'] == transcript) &
                         (self.annotation['start'] <= var_position) &
                         (self.annotation['end'] >= var_position)
         ]
-        if start_end == "start":
-            position = matches['start'].unique()[0]
-        elif start_end == "end":
-            position = matches['end'].unique()[0] 
+
 
         if not within_tx_intron.empty:
             print("located within an intron")
@@ -666,57 +803,60 @@ class EventAnnotate:
                     'introns': "NA"}
 
     def _annotate_intron_retention(self, start_intron):
-        intron = start_intron[0]
-        cryptic = "intron "
-        event = f"{intron} retention"
-        event_type = "intron retention"
+        if start_intron['region_type'] == "intron":
+            intron = start_intron['region_number']
+            cryptic = "intron "
+            event = f"{intron} retention"
+            event_type = "intron retention"
 
-        return {'event': event,
-                'cryptic': cryptic,
-                'supplementary_event': "",
-                'supp_event_type': "",
-                'location': "",
-                'distance': "",
-                'direction': "",
-                'alternate': "",
-                'event_type': event_type,
-                'introns': intron}
+            return {'event': event,
+                    'cryptic': cryptic,
+                    'supplementary_event': "",
+                    'supp_event_type': "",
+                    'location': "",
+                    'distance': "",
+                    'direction': "",
+                    'alternate': "",
+                    'event_type': event_type,
+                    'introns': intron}
 
     def _annotate_canonical(self, start_intron):
-        cryptic = "canonical "
-        intron = start_intron[0]
-        event = f"exon {intron}-{intron+1} splicing"
-        event_type = "canonical"
+        if start_intron['region_type'] == "intron":
+            intron = start_intron['region_number']
+            cryptic = "canonical "
+            event = f"exon {intron}-{intron+1} splicing"
+            event_type = "canonical"
 
-        return {'event': event,
-                'cryptic': cryptic,
-                'supplementary_event': "",
-                'supp_event_type': "",
-                'location': "",
-                'distance': "",
-                'direction': "",
-                'alternate': "",
-                'event_type': event_type,
-                'introns': intron}
+            return {'event': event,
+                    'cryptic': cryptic,
+                    'supplementary_event': "",
+                    'supp_event_type': "",
+                    'location': "",
+                    'distance': "",
+                    'direction': "",
+                    'alternate': "",
+                    'event_type': event_type,
+                    'introns': intron}
 
     def _annotate_exon_skipping(self, start_intron, end_intron):
-        introns = [start_intron[0], end_intron[0]]
-        event = f"exon {'-'.join(str(i) for i in range(min(introns)+1, max(introns)+1))} skipping"
-        event_type = "exon skipping"
-        introns = f"{', '.join(str(i) for i in range(min(introns), max(introns)+1))}"
+        if start_intron['region_type'] == "intron":
+            introns = [start_intron['region_number'], end_intron['region_number']]
+            event = f"exon {'-'.join(str(i) for i in range(min(introns)+1, max(introns)+1))} skipping"
+            event_type = "exon skipping"
+            introns = f"{', '.join(str(i) for i in range(min(introns), max(introns)+1))}"
 
-        
 
-        return {'event': event,
-                'cryptic': "",
-                'supplementary_event': "",
-                'supp_event_type': "",
-                'location': "NA",
-                'distance': "NA",
-                'direction': "",
-                'alternate': "",
-                'event_type': event_type,
-                'introns': introns}
+
+            return {'event': event,
+                    'cryptic': "",
+                    'supplementary_event': "",
+                    'supp_event_type': "",
+                    'location': "NA",
+                    'distance': "NA",
+                    'direction': "",
+                    'alternate': "",
+                    'event_type': event_type,
+                    'introns': introns}
     
     def _annotate_supplementary(self, introns):
         event = f"exon {'-'.join(str(i) for i in range(min(introns)+1, max(introns)+1))} skipping/"
