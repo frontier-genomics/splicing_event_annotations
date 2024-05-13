@@ -139,8 +139,26 @@ class EventAnnotate:
 
         matching_rows = [entry for entry in self.refgene if entry['start'] <= query and entry['end'] >= query and entry['chrom'] == chrom]
 
+        print(self.get_exon_intron(matching_rows, query))
+
         return matching_rows
     
+    def get_exon_intron(self, matching_rows, query):
+        indices = matching_rows[0]['exons']
+        exons = len(indices)
+        for i in range(len(indices)-1):
+            if indices[i] <= query <= indices[i+1]:
+                print(f"The query falls between indices {i} and {i+1} (0-based)")
+                break
+
+        if i % 2 != 0:
+            print(f"{i} is an odd number")
+            print("the region is an intron")
+        else:
+            print(f"{i} is an even number")
+            print("the region is an exon")
+
+
     def _produce_annotation(self, annotation, start_matches, end_matches):
         """
         Produces an annotation string based on the given annotation dictionary.
