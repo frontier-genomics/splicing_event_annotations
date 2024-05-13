@@ -178,7 +178,9 @@ class EventAnnotate:
             region_dict[tx_id] = {'transcript': tx_id,
                                   'region_type': region_type,
                                   'region_number': region_number,
-                                  'match': match}
+                                  'match': match,
+                                  'start-index': index_match,
+                                  'end-index': index_match+1}
 
         return region_dict
 
@@ -394,26 +396,29 @@ class EventAnnotate:
 
         matches = [entry for entry in all_matches if entry['id'] == transcript][0]            
 
+        print(matches)
+
         start = start_region[transcript]
         end = end_region[transcript]
 
         print(start_end)
 
         if start_end == "start":
-            location = f"{start['region_type']} {start['region_number']}"
-            other_location = f"{end['region_type']} {end['region_number']}"
-            position = matches['start']
+            location = f"{start['region_type']} {start['region_number']} "
+            other_location = f"{end['region_type']} {end['region_number']} "
+            
             introns = [start['region_number'], end['region_number']]
+            position = matches['exons'][start['start-index']] if start['region_type'] == "intron" else matches['exons'][start['start-index'] + 1]
         elif start_end == "end":
-            location = f"{end['region_type']} {end['region_number']}"
-            other_location = f"{start['region_type']} {start['region_number']}"
-            position = matches['end']
+            location = f"{end['region_type']} {end['region_number']} "
+            other_location = f"{start['region_type']} {start['region_number']} "
+            position = matches['exons'][start['end-index']] if start['region_type'] == "intron" else matches['exons'][start['end-index']] - 1
             introns = [start['region_number'], end['region_number']]
         
         print(location)
         print(position)
 
-        if location != other_location:
+        if location not in [f"intron {start['region_number']} ", f"exon {start['region_number']} ", f"exon {start['region_number']+1} "]:
             print("but event spans multiple introns")
             supp = self._annotate_supplementary(introns)
             supp_event = supp['event']
@@ -429,13 +434,15 @@ class EventAnnotate:
                 print(f"The calculation is {query_start} - {position} = {distance}")
             elif strand == "-":
                 event = "acceptor"
-                distance = position - query_start
-                print(f"The calculation is {position} - {query_start} = {distance}")
+                modifier = 1 if location == f"exon {start['region_number']} " else 0
+                distance = position - query_start + modifier
+                print(f"The calculation is {position} - {query_start} + {modifier} = {distance}")
         elif start_end == "end":
             if strand == "+":
                 event = "acceptor"
-                distance = query_end - position - 1
-                print(f"The calculation is {query_end} - {position} - 1 = {distance}")
+                modifier = 1 if location == f"intron {start['region_number']} " else 0
+                distance = query_end - position - modifier
+                print(f"The calculation is {query_end} - {position} - {modifier} = {distance}")
             elif strand == "-":
                 event = "donor"
                 distance = position - query_end + 1
@@ -444,11 +451,8 @@ class EventAnnotate:
 
         direction = " @ +" if distance > 0 else " @ "
 
-        # intronic acceptor
-        # intronic donor
         # exonic acceptor
         # exonic donor
-
 
         return {'event': event,
                 'cryptic': cryptic,
@@ -459,7 +463,7 @@ class EventAnnotate:
                 'direction': direction,
                 'alternate': "",
                 'event_type': event,
-                'introns': introns[0]}
+                'introns': min(introns)}
 
 
 
