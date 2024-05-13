@@ -751,7 +751,7 @@ class EventAnnotate:
                 # Skip trailing ,
                 exon_starts = list(map(int, row[8].split(',')[:-1]))
                 exon_ends = list(map(int, row[9].split(',')[:-1]))
-                exons = list(zip(exon_starts, exon_ends))
+                exons = [coord for pair in zip(exon_starts, exon_ends) for coord in pair]
                         
                 data = {
                     'chrom': f"chr{row[1]}",
