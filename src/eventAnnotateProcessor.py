@@ -405,33 +405,50 @@ class EventAnnotate:
 
         if start_end == "start":
             location = f"{start['region_type']} {start['region_number']} "
+            region_type = start['region_type']
+            region_number = start['region_number']
+            other_region_number = end['region_number']
+            other_region_type = end['region_type']
             other_location = f"{end['region_type']} {end['region_number']} "
             
             introns = [start['region_number'], end['region_number']]
             position = matches['exons'][start['start-index']] if start['region_type'] == "intron" else matches['exons'][start['start-index'] + 1]
+
         elif start_end == "end":
             location = f"{end['region_type']} {end['region_number']} "
+            region_type = end['region_type']
+            region_number = end['region_number']
+            other_region_number = start['region_number']
+            other_region_type = start['region_type']
             other_location = f"{start['region_type']} {start['region_number']} "
-            position = matches['exons'][start['end-index']] if start['region_type'] == "intron" else matches['exons'][start['end-index']] - 1
-            introns = [start['region_number'], end['region_number']]
+            position = matches['exons'][end['end-index']] if end['region_type'] == "intron" else matches['exons'][end['end-index'] - 1]
+            introns = [end['region_number'], start['region_number']]
         
         print(location)
         print(position)
+        print(other_region_number)
 
-        if location not in [f"intron {start['region_number']} ", f"exon {start['region_number']} ", f"exon {start['region_number']+1} "]:
+        if location not in [f"intron {other_region_number} ", f"exon {other_region_number} ", f"exon {other_region_number+1} "]:
             print("but event spans multiple introns")
+            if region_type == "exon" and region_number > other_region_number:
+                print("region_type: exon")
+                introns[0] = introns[0] - 1
+            print(introns)
             supp = self._annotate_supplementary(introns)
             supp_event = supp['event']
             supp_event_type = supp["supp_event_type"]
-            introns[0] = supp['introns']
+            intron = supp['introns']
         else:
             supp_event = ""
-            supp_event_type = ""    
+            supp_event_type = ""
+            intron = min(introns)
+
         if start_end == "start":
             if strand == "+":
                 event = "donor"
-                distance = query_start - position
-                print(f"The calculation is {query_start} - {position} = {distance}")
+                modifier = 1 if location == f"exon {start['region_number']} " else 0
+                distance = query_start - position - modifier
+                print(f"The calculation is {query_start} - {position} + {modifier} = {distance}")
             elif strand == "-":
                 event = "acceptor"
                 modifier = 1 if location == f"exon {start['region_number']} " else 0
@@ -440,13 +457,14 @@ class EventAnnotate:
         elif start_end == "end":
             if strand == "+":
                 event = "acceptor"
-                modifier = 1 if location == f"intron {start['region_number']} " else 0
+                modifier = 1 if location == f"intron {end['region_number']} " else 0
                 distance = query_end - position - modifier
                 print(f"The calculation is {query_end} - {position} - {modifier} = {distance}")
             elif strand == "-":
                 event = "donor"
-                distance = position - query_end + 1
-                print(f"The calculation is {position} - {query_end} + 1 = {distance}")
+                modifier = 1 if location == f"intron {end['region_number']} " else 0
+                distance = position - query_end + modifier
+                print(f"The calculation is {position} - {query_end}  + {modifier} = {distance}")
         print(event)
 
         direction = " @ +" if distance > 0 else " @ "
@@ -463,7 +481,7 @@ class EventAnnotate:
                 'direction': direction,
                 'alternate': "",
                 'event_type': event,
-                'introns': min(introns)}
+                'introns': intron}
 
 
 
