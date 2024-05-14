@@ -1,5 +1,5 @@
 Feature: Annotate a tsv with events
-
+@wip
     Scenario: Annotate test.tsv with events
         Given a tsv resources/test.tsv
         And the annotation dataset is refseq
