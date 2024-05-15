@@ -1,8 +1,6 @@
 from behave import given, when, then
 from src.eventAnnotateProcessor import EventAnnotate
 
-
-
 # Fetch the MANE transcript for a splicing event
 
 @given(u'a splicing event with chrom {chrom}, start {start}, end {end}, and strand {strand}')
@@ -24,9 +22,11 @@ def step_impl(context):
         end = context.input['end'],
         strand = context.input['strand'],
         transcript = context.input['transcript'],
-        type = context.input['type'],
-        dataset = "refseq"
+        type = context.input['type']
     )
+
+    context.annotation.process('refseq')
+
     context.transcript = context.annotation.get_mane_transcript()
 
 
@@ -69,9 +69,10 @@ def step_impl(context):
         end = context.input['end'],
         strand = context.input['strand'],
         transcript = context.input['transcript'],
-        type = context.input['type'],
-        dataset = context.dataset
+        type = context.input['type']
     )
+
+    context.annotation.process('refseq')
     
 
 @then(u'the resulting annotations of canonical splicing should be event {event} of type {event_type} at intron {intron}')
@@ -113,8 +114,9 @@ def step_impl(context):
         strand = context.input['strand'],
         transcript = context.input['transcript'],
         type = context.input['type'],
-        dataset = context.dataset
     )
+
+    context.annotation.process('refseq')
     
 @then(u'the resulting annotations of exon skipping should be event {event} of type {event_type} at intron {intron}')
 def step_impl(context, event, event_type, intron):
@@ -155,8 +157,9 @@ def step_impl(context):
         strand = context.input['strand'],
         transcript = context.input['transcript'],
         type = context.input['type'],
-        dataset = context.dataset        
     )
+
+    context.annotation.process('refseq')
     
 @then(u'the resulting annotations of intron retention should be event {event} of type {event_type} at intron {intron}')
 def step_impl(context, event, event_type, intron):
@@ -197,8 +200,9 @@ def step_impl(context):
         strand = context.input['strand'],
         transcript = context.input['transcript'],
         type = context.input['type'],
-        dataset = context.dataset
     )
+
+    context.annotation.process('refseq')
     
 @then(u'the resulting annotations of cryptic donors should be event {event} of location {location} and type {event_type} at intron {intron} at a distance of {distance_from_authentic}')
 def step_impl(context, event, event_type, intron, location, distance_from_authentic):
@@ -245,8 +249,9 @@ def step_impl(context):
         strand = context.input['strand'],
         transcript = context.input['transcript'],
         type = context.input['type'],
-        dataset = context.dataset
     )
+
+    context.annotation.process('refseq')
     
 @then(u'the resulting annotations of cryptic acceptors should be event {event} of location {location} and type {event_type} at intron {intron} at a distance of {distance_from_authentic}')
 def step_impl(context, event, event_type, intron, location, distance_from_authentic):
@@ -293,8 +298,9 @@ def step_impl(context):
         strand = context.input['strand'],
         transcript = context.input['transcript'],
         type = context.input['type'],
-        dataset = context.dataset
     )
+
+    context.annotation.process('refseq')
     
 @then(u'the resulting annotations of skip-cryps should be event {event} of location {location} and type {event_type} at intron {intron} at a distance of {distance_from_authentic}')
 def step_impl(context, event, event_type, intron, location, distance_from_authentic):
@@ -341,8 +347,9 @@ def step_impl(context):
         strand = context.input['strand'],
         transcript = context.input['transcript'],
         type = context.input['type'],
-        dataset = context.dataset
     )
+
+    context.annotation.process('refseq')
     
 @then(u'the resulting annotations of unannotated junctions should be event {event} of location {location} and type {event_type} at intron {intron}')
 def step_impl(context, event, event_type, intron, location):
@@ -383,8 +390,9 @@ def step_impl(context):
         strand = context.input['strand'],
         transcript = context.input['transcript'],
         type = context.input['type'],
-        dataset = context.dataset
     )
+
+    context.annotation.process('refseq')
     
 @then(u'the resulting annotations of alternate splicing should be event {event} of location {location} and type {event_type} at intron {intron} at a distance of {distance_from_authentic}')
 def step_impl(context, event, event_type, intron, location, distance_from_authentic):

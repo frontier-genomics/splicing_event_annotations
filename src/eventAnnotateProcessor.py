@@ -4,7 +4,7 @@ logging.basicConfig(level=logging.INFO)
 
 class EventAnnotate:
 
-    def __init__(self, chrom, start, end, strand, transcript, type, dataset):
+    def __init__(self, chrom, start, end, strand, transcript, type):
         self.coordinates = {
             'chrom': str(chrom),
             'start': int(start),
@@ -14,9 +14,12 @@ class EventAnnotate:
             'type': str(type)
         }
 
-        print(f"the current transcript for this event is {self.coordinates['transcript']}")
+    def process(self, dataset, get_annotations = True):
 
-        self.read_refgene(dataset)
+        if get_annotations == True:
+            self.read_refgene(dataset)
+        else:
+            self.refgene = get_annotations
 
         if self.coordinates['transcript'] == "NA":
             self.coordinates['transcript'] = self.get_mane_transcript()['transcript']
@@ -24,14 +27,19 @@ class EventAnnotate:
         start = self.reference_match('start')
         end = self.reference_match('end')
 
-
-
         annotations = self.fetch_transcript_annotations(start, end)
+
         self.event = annotations['event']
         self.event_type = annotations['event_type']
-        self.introns = annotations['introns']
+        self.introns = str(annotations['introns'])
         self.location = annotations['location']
-        self.distance_from_authentic = annotations['distance_from_authentic']
+        self.distance_from_authentic = str(annotations['distance_from_authentic'])
+
+        return{'event': self.event,
+               'event_type': self.event_type,
+               'introns': self.introns,
+               'location': self.location,
+               'distance_from_authentic': self.distance_from_authentic}
 
     def get_mane_transcript(self, base=1):
         print(f"finding mane transcript match for event")
@@ -638,8 +646,8 @@ class EventAnnotate:
                     'cryptic': cryptic,
                     'supplementary_event': "",
                     'supp_event_type': "",
-                    'location': "",
-                    'distance': "",
+                    'location': "NA",
+                    'distance': "NA",
                     'direction': "",
                     'alternate': "",
                     'event_type': event_type,
@@ -656,8 +664,8 @@ class EventAnnotate:
                     'cryptic': cryptic,
                     'supplementary_event': "",
                     'supp_event_type': "",
-                    'location': "",
-                    'distance': "",
+                    'location': "NA",
+                    'distance': "NA",
                     'direction': "",
                     'alternate': "",
                     'event_type': event_type,
@@ -700,6 +708,8 @@ class EventAnnotate:
             raise ValueError("Invalid annotation choice. Please select either 'refseq' or 'ensembl' (currently not supported).")
         
         self.refgene = self.read_genepred(input_file, skip_first_column=True)
+
+        return self.refgene
 
     def read_genepred(self, input_file, skip_first_column=False):
         """
