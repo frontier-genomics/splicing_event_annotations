@@ -1,8 +1,9 @@
 import logging
+import src.eventAnnotateProcessor
 
 logging.basicConfig(level=logging.INFO)
 
-class EventAnnotate:
+class EventAnnotateList:
 
     def __init__(self, chrom, start, end, strand, transcript, type, dataset):
         self.coordinates = {

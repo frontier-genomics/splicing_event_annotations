@@ -1,10 +1,4 @@
-Feature: Annotate events in cortar data using RefSeq Curated Annotations
-
-	Add tests for:
-	- Multiple overlapping MANE transcripts found. Unable to assign.
-	- Multiple overlapping MANE transcripts found on opposite strand only. Unable to assign.
-	- intergenic/intronic junction on opposite strand
-	- test ensembl error
+Feature: Annotate splicing events using RefSeq Curated Annotations
 
 	Scenario Outline: Canonical Splicing
 		Given a canonical splicing event with chrom <chrom>, start <start>, end <end>, strand <strand>, transcript <transcript>, and type <type>
