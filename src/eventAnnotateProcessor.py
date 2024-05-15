@@ -35,20 +35,8 @@ class EventAnnotate:
         self.location = annotations['location']
         self.distance_from_authentic = annotations['distance_from_authentic']
 
-    # def get_annotations(self, annotation_choice):
-    #     if annotation_choice == "refseq":
-    #         self.annotation = pd.read_csv("resources/annotations/refseq_curated_introns_sorted.tsv", sep='\t')
-    #         self.exons = pd.read_csv("resources/annotations/refseq_curated_exons_sorted.tsv", sep='\t')
-    #     elif annotation_choice == "ensembl":
-    #         raise ValueError("Ensembl annotations are currently not supported. Please try again with 'refseq'.")
-    #     else:
-    #         raise ValueError("Invalid annotation choice. Please select either 'refseq' or 'ensembl' (currently not supported).")
-        
-    #     self.annotation.columns = ['chrom', 'start', 'end', 'transcript', 'intron', 'strand']
-
     def get_mane_transcript(self, base=1):
         print(f"finding mane transcript match for event")
-        #transcripts = pd.read_csv("resources/annotations/refseq_mane_gene_tx_names.tsv", sep='\t')
 
         chrom = self.coordinates['chrom']
         start = self.coordinates['start']
@@ -57,21 +45,6 @@ class EventAnnotate:
 
         print(f"{chrom} {start} {end} {strand}")
 
-        #print([entry for entry in self.refgene if entry['chrom'] == chrom and entry['start'] <= start and entry['end'] >= start and entry['mane'] == "Y"])
-        #print([entry for entry in self.refgene if entry['chrom'] == chrom and entry['start'] <= end and entry['end'] >= end and entry['mane'] == "Y"])
-
-        # matching_rows_start = transcripts[
-        #     (transcripts['chrom'] == chrom) &
-        #     (transcripts['start'] <= start) &
-        #     (transcripts['end'] >= start)
-        # ]
-
-        # matching_rows_end = transcripts[
-        #     (transcripts['chrom'] == chrom) &
-        #     (transcripts['start'] <= end) &
-        #     (transcripts['end'] >= end)
-        # ]
-
         matching_rows_start = [entry for entry in self.refgene if entry['start'] <= start and entry['end'] >= start and entry['chrom'] == chrom and entry['mane'] == 'Y']
         matching_rows_end = [entry for entry in self.refgene if entry['start'] <= end and entry['end'] >= end and entry['chrom'] == chrom and entry['mane'] == 'Y']
         
@@ -79,7 +52,6 @@ class EventAnnotate:
         print(f"matching end: \n {matching_rows_end}")
 
         matching_rows = matching_rows_start + matching_rows_end
-
 
         matching_entries = {}
         for entry in matching_rows:
@@ -314,9 +286,6 @@ class EventAnnotate:
         start_region_all = start_matches_all_tx['region_information']
         end_region_all = end_matches_all_tx['region_information']
 
-        # print(f"Junction start in {start_matches[0]['id']} in {start_region['region_type']} {start_region['region_number']}")
-        # print(f"Junction end in {end_matches[0]['id']} in {end_region['region_type']} {end_region['region_number']}")
-
         if start_match:
             print("The start is annotated")
         else:
@@ -374,11 +343,6 @@ class EventAnnotate:
         print(start_matches)
         print(end_matches)
 
-        # start_matches = [entry for entry in start_matches if entry['id'] != transcript]
-        # end_matches = [entry for entry in end_matches if entry['id'] != transcript]
-
-        # return {'alternate': '', 'alternate_event': ""}
-
         start_match = {k: v for k, v in start_matches.items() if v['transcript'] != transcript and v['match'] == True}
         end_match = {k: v for k, v in end_matches.items() if v['transcript'] != transcript and v['match'] == True}
 
@@ -387,8 +351,6 @@ class EventAnnotate:
         print(end_match)
         print(list(start_match.keys()))
         print(list(end_match.keys()))
-
-        print("why you no print")
 
         filtered_data = {k: v for k, v in start_matches.items() if v['transcript'] != transcript}
 
@@ -419,9 +381,6 @@ class EventAnnotate:
 
             transcripts = intron_match_transcripts
             print(f"Matching Transcripts After Filtering {transcripts}")
-
-            # start_intron = alternate_start_matches['intron'].iloc[0]
-            # end_intron = alternate_end_matches['intron'].iloc[0]
 
             if self.coordinates['type'] == "ir":
                 return {"no current support for alternate intron retention"}
@@ -542,9 +501,6 @@ class EventAnnotate:
 
         direction = " @ +" if distance > 0 else " @ "
 
-        # exonic acceptor
-        # exonic donor
-
         return {'event': event,
                 'cryptic': cryptic,
                 'supplementary_event': supp_event,
@@ -555,7 +511,6 @@ class EventAnnotate:
                 'alternate': "",
                 'event_type': event,
                 'introns': intron}
-
 
     def _annotate_unannotated(self, start_region_all, end_region_all):
         print("no start or end matches for transcript identified")
@@ -673,7 +628,6 @@ class EventAnnotate:
                 'alternate': "",
                 'event_type': "intron",
                 'introns': "NA"}
-
 
     def _annotate_intron_retention(self, start_intron):
         if start_intron['region_type'] == "intron":
