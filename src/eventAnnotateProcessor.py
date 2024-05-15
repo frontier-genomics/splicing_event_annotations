@@ -18,12 +18,15 @@ class EventAnnotate:
 
         print(f"the current transcript for this event is {self.coordinates['transcript']}")
 
+        self.read_refgene(dataset)
+
         if self.coordinates['transcript'] == "NA":
             self.coordinates['transcript'] = self.get_mane_transcript()['transcript']
 
-        self.read_refgene(dataset)
         start = self.reference_match('start')
         end = self.reference_match('end')
+
+
 
         annotations = self.fetch_transcript_annotations(start, end)
         self.event = annotations['event']
@@ -45,68 +48,88 @@ class EventAnnotate:
 
     def get_mane_transcript(self, base=1):
         print(f"finding mane transcript match for event")
-        transcripts = pd.read_csv("resources/annotations/refseq_mane_gene_tx_names.tsv", sep='\t')
+        #transcripts = pd.read_csv("resources/annotations/refseq_mane_gene_tx_names.tsv", sep='\t')
 
         chrom = self.coordinates['chrom']
         start = self.coordinates['start']
         end = self.coordinates['start']
         strand = self.coordinates['strand']
 
-        matching_rows_start = transcripts[
-            (transcripts['chrom'] == chrom) &
-            (transcripts['start'] <= start) &
-            (transcripts['end'] >= start)
-        ]
+        print(f"{chrom} {start} {end} {strand}")
 
-        matching_rows_end = transcripts[
-            (transcripts['chrom'] == chrom) &
-            (transcripts['start'] <= end) &
-            (transcripts['end'] >= end)
-        ]
+        #print([entry for entry in self.refgene if entry['chrom'] == chrom and entry['start'] <= start and entry['end'] >= start and entry['mane'] == "Y"])
+        #print([entry for entry in self.refgene if entry['chrom'] == chrom and entry['start'] <= end and entry['end'] >= end and entry['mane'] == "Y"])
 
-        matching_rows = pd.concat([matching_rows_start, matching_rows_end]).drop_duplicates()
+        # matching_rows_start = transcripts[
+        #     (transcripts['chrom'] == chrom) &
+        #     (transcripts['start'] <= start) &
+        #     (transcripts['end'] >= start)
+        # ]
 
-        if matching_rows.empty:
+        # matching_rows_end = transcripts[
+        #     (transcripts['chrom'] == chrom) &
+        #     (transcripts['start'] <= end) &
+        #     (transcripts['end'] >= end)
+        # ]
+
+        matching_rows_start = [entry for entry in self.refgene if entry['start'] <= start and entry['end'] >= start and entry['chrom'] == chrom and entry['mane'] == 'Y']
+        matching_rows_end = [entry for entry in self.refgene if entry['start'] <= end and entry['end'] >= end and entry['chrom'] == chrom and entry['mane'] == 'Y']
+        
+        print(f"matching start: \n {matching_rows_start}")
+        print(f"matching end: \n {matching_rows_end}")
+
+        matching_rows = matching_rows_start + matching_rows_end
+
+
+        matching_entries = {}
+        for entry in matching_rows:
+            matching_entries[entry['id']] = [entry['id'], entry['gene_name'], entry['strand']]
+
+        matching_entries_unique = [entry for entry in matching_entries.values()]
+
+        print(f"matching transcripts: \n {matching_entries_unique}")
+
+        if not matching_entries_unique:
             print("no MANE transcript match found")
             return {"transcript": "unknown",
                     "gene": "unknown",
                     "warning": "no MANE transcript match found"}
-        
-        matching_rows['start'] = matching_rows['start'] + base
-        match = pd.DataFrame(matching_rows)
 
-        print(match)
-        print(len(match['transcript'].unique()))
+        if len(matching_entries_unique) == 1:
+            transcript = matching_entries_unique[0]
 
-        if len(match['transcript'].unique()) == 1:
-            transcript = match['transcript'].iloc[0]
-            gene = match['gene'].iloc[0]
-
-            if match['strand'].unique()[0] == strand:
-
+            if transcript[2] == strand:
                 warning = "none"
             else:
-                print(match['strand'].unique()[0])
+                print(transcript[2] == strand)
                 print(strand)
                 warning = "MANE transcript found on opposite strand only."
 
-        elif len(match['transcript'].unique()) > 1:
-            if sum(match['strand'] == strand) == 1:
-                transcript = match['transcript'].iloc[0]
-                gene = match['gene'].iloc[0]
-                warning = "Overlapping MANE transcript on opposite strand found."
-            elif sum(match['strand'] == strand) != 1:
-                transcript = "unknown"
-                gene = "unknown"
-                warning = "Multiple overlapping MANE transcripts found. Unable to assign."
-            elif sum(match['strand'] == strand) == 0:
-                transcript = "unknown"
-                gene = "unknown"
-                warning = "Multiple overlapping MANE transcripts found on opposite strand only. Unable to assign."
+        elif len(matching_entries_unique) > 1:
+            strand_matches = []
+            other_strand_matches = []
+            for match in matching_entries_unique:
+                if match[2] == strand:
+                    strand_matches.append(match)
+                elif match[2] != strand:
+                    other_strand_matches.append(match)
+            if len(strand_matches) == 1:
+                transcript = strand_matches[0]
+                warning = "MANE transcript on opposite strand also present."
+            else:
+                if len(strand_matches) > 1:
+                    transcript = "NA"
+                    gene = "NA"
+                    warning = "Multiple MANE transcripts found on same strand. Unable to assign transcript. Please supply."
+                elif len(other_strand_matches) > 1:
+                    transcript = "NA"
+                    gene = "NA"
+                    warning = "Multiple MANE transcripts found on opposite strand. Unable to assign transcript. Please supply."
 
-        print(f"MANE match: {transcript}")
-        return {"transcript": transcript,
-                "gene": gene,
+
+        print(f"MANE match: {transcript[0]}")
+        return {"transcript": transcript[0],
+                "gene": transcript[1],
                 "warning": warning}
 
     def reference_match(self, start_end):
