@@ -1,18 +1,39 @@
 import logging
+from pydantic import BaseModel
+from typing import List
 
 logging.basicConfig(level=logging.INFO)
 
+class SplicingCoordinates(BaseModel):
+    chrom: str # in [chr1-X] format
+    start: int
+    end: int
+    strand: str # in ["+","-","*"]
+    transcript: str
+    type: str # in ["ir", "sj"]
+
+class AnnotationOutput(BaseModel):
+    event: str
+    event_type: str # in list
+    introns: str
+    location: str # intron number or exon number or intergenic or NA
+    distance_from_authentic: str # or "NA"
+
 class EventAnnotate:
 
-    def __init__(self, chrom, start, end, strand, transcript, type):
-        self.coordinates = {
-            'chrom': str(chrom),
-            'start': int(start),
-            'end': int(end),
-            'strand': str(strand),
-            'transcript': str(transcript),
-            'type': str(type)
-        }
+    def __init__(self, chrom, start, end, strand, transcript, input_type):
+        
+        coordinates = SplicingCoordinates(
+            chrom=str(chrom),
+            start=str(start),
+            end=str(end),
+            strand=str(strand),
+            transcript=str(transcript),
+            type=str(input_type )
+        )
+
+        self.coordinates = coordinates.model_dump()
+
 
     def process(self, dataset, get_annotations = True):
 
@@ -27,7 +48,19 @@ class EventAnnotate:
         start = self.reference_match('start')
         end = self.reference_match('end')
 
-        annotations = self.fetch_transcript_annotations(start, end)
+        if self.coordinates['strand'] == "*":
+            annotations = self._produce_annotation({'event': "",
+                    'cryptic': "unknown event (unknown strand)",
+                    'supplementary_event': "",
+                    'supp_event_type': "",
+                    'location': "NA",
+                    'distance': "NA",
+                    'direction': "",
+                    'alternate': "",
+                    'event_type': "unknown",
+                    'introns': "NA"}, start, end)
+        else:
+            annotations = self.fetch_transcript_annotations(start, end)
 
         self.event = annotations['event']
         self.event_type = annotations['event_type']
@@ -214,7 +247,7 @@ class EventAnnotate:
         event_type = annotation['event_type']
         supp_event_type = annotation['supp_event_type']
 
-        if cryptic not in ['canonical ', 'intron ']:
+        if cryptic not in ['canonical ', 'intron ', 'unknown event (unknown strand)']:
             alternate_results = self._is_alternate_splicing(start_matches, end_matches)
             alternate = alternate_results['alternate']
             alternate_event = alternate_results['alternate_event']
@@ -243,11 +276,15 @@ class EventAnnotate:
         print(alternate)
         print(alternate_event)
 
-        return {'event': f"{alternate}{supplementary_event}{cryptic}{location}{event}{direction}{distance}{alternate_event}",
-                'event_type': event_type,
-                'introns': introns,
-                'location': location_raw.strip(),
-                'distance_from_authentic': distance_raw}
+        annotation_output = AnnotationOutput(
+            event=f"{alternate}{supplementary_event}{cryptic}{location}{event}{direction}{distance}{alternate_event}",
+            event_type=event_type,
+            introns=str(introns),
+            location=location_raw.strip(),
+            distance_from_authentic=str(distance_raw)
+        )
+
+        return annotation_output.model_dump()
 
     def fetch_transcript_annotations(self, start_matches_all_tx, end_matches_all_tx):
         transcript = self.coordinates['transcript']
@@ -485,6 +522,10 @@ class EventAnnotate:
             supp_event = ""
             supp_event_type = ""
             intron = min(introns)
+            print("well we made it to here.")
+
+        print("do we make it to here?")
+        print(strand)
 
         if start_end == "start":
             if strand == "+":
@@ -508,6 +549,9 @@ class EventAnnotate:
                 modifier = 1 if location == f"intron {end['region_number']} " else 0
                 distance = position - query_end + modifier
                 print(f"The calculation is {position} - {query_end}  + {modifier} = {distance}")
+        else:
+            print(f"{start_end}: this isn't working.")
+        
         print(event)
 
         direction = " @ +" if distance > 0 else " @ "

@@ -22,7 +22,7 @@ def step_impl(context):
         end = context.input['end'],
         strand = context.input['strand'],
         transcript = context.input['transcript'],
-        type = context.input['type']
+        input_type = context.input['type']
     )
 
     context.annotation.process('refseq')
@@ -69,7 +69,7 @@ def step_impl(context):
         end = context.input['end'],
         strand = context.input['strand'],
         transcript = context.input['transcript'],
-        type = context.input['type']
+        input_type = context.input['type']
     )
 
     context.annotation.process('refseq')
@@ -113,7 +113,7 @@ def step_impl(context):
         end = context.input['end'],
         strand = context.input['strand'],
         transcript = context.input['transcript'],
-        type = context.input['type'],
+        input_type = context.input['type'],
     )
 
     context.annotation.process('refseq')
@@ -156,7 +156,7 @@ def step_impl(context):
         end = context.input['end'],
         strand = context.input['strand'],
         transcript = context.input['transcript'],
-        type = context.input['type'],
+        input_type = context.input['type'],
     )
 
     context.annotation.process('refseq')
@@ -199,7 +199,7 @@ def step_impl(context):
         end = context.input['end'],
         strand = context.input['strand'],
         transcript = context.input['transcript'],
-        type = context.input['type'],
+        input_type = context.input['type'],
     )
 
     context.annotation.process('refseq')
@@ -248,7 +248,7 @@ def step_impl(context):
         end = context.input['end'],
         strand = context.input['strand'],
         transcript = context.input['transcript'],
-        type = context.input['type'],
+        input_type = context.input['type'],
     )
 
     context.annotation.process('refseq')
@@ -297,7 +297,7 @@ def step_impl(context):
         end = context.input['end'],
         strand = context.input['strand'],
         transcript = context.input['transcript'],
-        type = context.input['type'],
+        input_type = context.input['type'],
     )
 
     context.annotation.process('refseq')
@@ -346,7 +346,7 @@ def step_impl(context):
         end = context.input['end'],
         strand = context.input['strand'],
         transcript = context.input['transcript'],
-        type = context.input['type'],
+        input_type = context.input['type'],
     )
 
     context.annotation.process('refseq')
@@ -389,7 +389,7 @@ def step_impl(context):
         end = context.input['end'],
         strand = context.input['strand'],
         transcript = context.input['transcript'],
-        type = context.input['type'],
+        input_type = context.input['type'],
     )
 
     context.annotation.process('refseq')
