@@ -1,5 +1,5 @@
 Feature: Annotate a list of splicing events using RefSeq Curated Annotations
-@wip
+
     Scenario: Annotate list of splicing events
         Given the splicing events
             | event | chrom | start    | end      | strand | type | transcript     |

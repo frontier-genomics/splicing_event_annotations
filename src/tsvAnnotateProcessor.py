@@ -1,57 +1,50 @@
-import pandas as pd
-import numpy as np
-import src.eventAnnotateProcessor as eap
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 class TsvAnnotate:
-    def __init__(self, tsv_path, input_columns = [0,1,2,3], tx_column = 999, sep='\t'):
-        self.tsv = pd.read_csv(tsv_path, sep=sep)
-        print(f"Opening tsv file: {tsv_path}")
-        print(f"Rows: {self.tsv.shape[0]}")
-        event_number = range(self.tsv.shape[0])
-        print(event_number)
-        print(f"Found {max(event_number)+1} events in tsv file")
-        chrom = self.tsv.iloc[:, input_columns[0]]
-        start = self.tsv.iloc[:, input_columns[1]]
-        end = self.tsv.iloc[:, input_columns[2]]
-        strand = self.tsv.iloc[:, input_columns[3]]
-        transcript = self.tsv.iloc[:, tx_column] if tx_column != 999 else ["NA"] * (max(event_number) + 1)
 
-        self.events = {'chrom': chrom,
-                       'start': start,
-                       'end': end,
-                       'strand': strand,
-                       'transcript': transcript,
-                       'type': ["sj"] * (max(event_number) + 1),
-                       'event_number': event_number}
+    def __init__(self, tsv, dataset, columns = [0,1,2,3,4,5], header = True):
+        self.tsv = self.load_tsv(tsv, columns, header)
+        self.dataset = dataset
 
-    def annotate(self, dataset = 'refseq'):
-        self.annotations = []
+    def load_tsv(self, tsv, columns = [0,1,2,3,4,5], header = True):
+        """
+        GenePred extension format:
+        http://genome.ucsc.edu/FAQ/FAQformat.html#GenePredExt
 
-        for index in self.events['event_number']:
+        Column definitions:
+        0. string name;                 "Name of gene (usually transcript_id from GTF)"
+        1. string chrom;                "Chromosome name"
+        2. char[1] strand;              "+ or - for strand"
+        3. uint txStart;                "Transcription start position"
+        4. uint txEnd;                  "Transcription end position"
+        5. uint cdsStart;               "Coding region start"
+        6. uint cdsEnd;                 "Coding region end"
+        7. uint exonCount;              "Number of exons"
+        8. uint[exonCount] exonStarts;  "Exon start positions"
+        9. uint[exonCount] exonEnds;    "Exon end positions"
+        10. uint id;                    "Unique identifier"
+        11. string name2;               "Alternate name (e.g. gene_id from GTF)"
+        """
 
-            print(f"Annotating event {index}...")
+        dataset = []
 
-            event = eap.EventAnnotate(chrom = self.events['chrom'][index],
-                                      start = self.events['start'][index],
-                                      end = self.events['end'][index],
-                                      strand = self.events['strand'][index],
-                                      transcript = self.events['transcript'][index],
-                                      type = self.events['type'][index])
-            
-            # if event.coordinates['transcript'] == "get transcripts":
-            #     transcript = event.get_mane_transcript(annotation)
-            
-            print(dataset)
+        with open(tsv, 'r') as infile:
+            if header:
+                next(infile)  # Skip the first line
+            for line in infile:
+                row = line.rstrip('\n').split('\t')
+                        
+                data = {
+                    'chrom': row[columns[0]],
+                    'start': int(row[columns[1]]),
+                    'end': int(row[columns[2]]),
+                    'strand': row[columns[3]],
+                    'type': row[columns[4]].lower(),
+                    'transcript': row[columns[5]] if len(columns) > 5 else "NA"
+                }
 
-            event.get_annotations(dataset)
+                dataset.append(data)
 
-            start = event.reference_match('start')
-            end = event.reference_match('end')
-
-            annotation = event.fetch_transcript_annotations(start, end)['event']
-
-            print(annotation)
-
-            self.annotations.append(annotation)
-
-        return self.annotations
+        return dataset
