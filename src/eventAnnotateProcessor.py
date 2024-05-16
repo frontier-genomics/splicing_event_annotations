@@ -34,6 +34,8 @@ class EventAnnotate:
 
         self.coordinates = coordinates.model_dump()
 
+        logging.debug(f'INITIALIZED:{self.coordinates['chrom']}-{self.coordinates['start']}-{self.coordinates['end']} ({self.coordinates['strand']})[{self.coordinates['transcript']}; {self.coordinates['type']}]')
+
 
     def process(self, dataset, get_annotations = True):
 
