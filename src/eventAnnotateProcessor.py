@@ -46,7 +46,7 @@ class EventAnnotate:
 
         chrom = self.coordinates['chrom']
         start = self.coordinates['start']
-        end = self.coordinates['start']
+        end = self.coordinates['end']
         strand = self.coordinates['strand']
 
         print(f"{chrom} {start} {end} {strand}")
@@ -78,6 +78,11 @@ class EventAnnotate:
 
             if transcript[2] == strand:
                 warning = "none"
+            
+            elif strand == "*":
+                self.coordinates['strand'] = transcript[2]
+                warning = "strand not provided - using MANE transcript strand"
+
             else:
                 print(transcript[2] == strand)
                 print(strand)
