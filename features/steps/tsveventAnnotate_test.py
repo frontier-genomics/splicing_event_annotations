@@ -1,6 +1,6 @@
 from behave import given, when, then
 import src.main as main
-
+import logging
 
 @given(u'the splicing event tsv {tsv}')
 def step_impl(context, tsv):

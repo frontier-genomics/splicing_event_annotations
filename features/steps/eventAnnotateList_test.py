@@ -1,5 +1,8 @@
 from behave import given, when, then
 from src.eventAnnotateProcessorList import EventAnnotateList
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 @given(u'the splicing events')
 def step_impl(context):

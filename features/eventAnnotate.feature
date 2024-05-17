@@ -165,42 +165,43 @@ Feature: Annotate splicing events using RefSeq Curated Annotations
 		Then the result should be transcript <transcript>, gene <gene>, and warning <warning>
 
 		Examples:
-			| test | chrom | start    | end      | strand | transcript     | gene    | warning                                          |
-			| 1    | chr9  | 34646787 | 34647088 | +      | NM_000155.4    | GALT    | none                                             |
-			| 2    | chr9  | 34646787 | 34647088 | +      | NM_000155.4    | GALT    | none                                             |
-			| 3    | chr9  | 34647259 | 34647831 | +      | NM_000155.4    | GALT    | none                                             |
-			| 4    | chr9  | 34647259 | 34648114 | +      | NM_000155.4    | GALT    | none                                             |
-			| 5    | chr9  | 34646920 | 34647088 | +      | NM_000155.4    | GALT    | none                                             |
-			| 6    | chr9  | 34646787 | 34647120 | +      | NM_000155.4    | GALT    | none                                             |
-			| 7    | chr9  | 34647259 | 34647474 | +      | NM_000155.4    | GALT    | none                                             |
-			| 8    | chr9  | 34647259 | 34648091 | +      | NM_000155.4    | GALT    | none                                             |
-			| 9    | chr9  | 34647259 | 34648047 | +      | NM_000155.4    | GALT    | none                                             |
-			| 10   | chrX  | 40054043 | 40054255 | -      | NM_001123385.2 | BCOR    | none                                             |
-			| 11   | chrX  | 40054043 | 40054255 | -      | NM_001123385.2 | BCOR    | none                                             |
-			| 12   | chrX  | 40057322 | 40062745 | -      | NM_001123385.2 | BCOR    | none                                             |
-			| 13   | chrX  | 40081196 | 40081258 | +      | NM_001123385.2 | BCOR    | MANE transcript found on opposite strand only.   |
-			| 14   | chrX  | 40096604 | 40097680 | +      | NM_001123385.2 | BCOR    | MANE transcript found on opposite strand only.   |
-			| 15   | chrX  | 40097722 | 40098095 | +      | NM_001123385.2 | BCOR    | MANE transcript found on opposite strand only.   |
-			| 16   | chrX  | 40113978 | 40208244 | -      | unknown        | unknown | no MANE transcript match found                   |
-			| 17   | chrX  | 40115468 | 40117489 | +      | unknown        | unknown | no MANE transcript match found                   |
-			| 18   | chrX  | 40077970 | 40177006 | -      | NM_001123385.2 | BCOR    | none                                             |
-			| 19   | chrX  | 41086110 | 41123470 | +      | NM_001039591.3 | USP9X   | none                                             |
-			| 20   | chrX  | 41087666 | 41123470 | +      | NM_001039591.3 | USP9X   | none                                             |
-			| 21   | chrX  | 41101571 | 41102912 | -      | NM_001039591.3 | USP9X   | MANE transcript found on opposite strand only.   |
-			| 22   | chrX  | 41114762 | 41123470 | +      | NM_001039591.3 | USP9X   | none                                             |
-			| 23   | chrX  | 41123725 | 41128999 | +      | NM_001039591.3 | USP9X   | none                                             |
-			| 24   | chrX  | 41134838 | 41140655 | +      | NM_001039591.3 | USP9X   | none                                             |
-			| 25   | chrX  | 41141436 | 41143290 | +      | NM_001039591.3 | USP9X   | none                                             |
-			| 26   | chrX  | 41144347 | 41144521 | +      | NM_001039591.3 | USP9X   | none                                             |
-			| 27   | chrX  | 41144627 | 41146305 | +      | NM_001039591.3 | USP9X   | none                                             |
-			| 28   | chrX  | 41144627 | 41148373 | +      | NM_001039591.3 | USP9X   | none                                             |
-			| 29   | chrX  | 41148576 | 41152932 | +      | NM_001039591.3 | USP9X   | none                                             |
-			| 30   | chrX  | 41149755 | 41151932 | +      | NM_001039591.3 | USP9X   | none                                             |
-			| 31   | chrX  | 41153082 | 41167481 | +      | NM_001039591.3 | USP9X   | none                                             |
-			| 32   | chrX  | 41198618 | 41205302 | +      | NM_001039591.3 | USP9X   | none                                             |
-			| 33   | chrX  | 41216059 | 41217219 | +      | NM_001039591.3 | USP9X   | none                                             |
-			| 34   | chrX  | 41223403 | 41224806 | +      | NM_001039591.3 | USP9X   | none                                             |
-			| 35   | chrX  | 41229636 | 41230503 | +      | NM_001039591.3 | USP9X   | none                                             |
-			| 36   | chrX  | 53267065 | 53279563 | +      | NM_001111125.3 | IQSEC2  | MANE transcript found on opposite strand only.   |
-			| 37   | chrX  | 54445540 | 54446203 | -      | NM_004463.3    | FGD1    | MANE transcript on opposite strand also present. |
-			| 38   | chrX  | 54448698 | 54449551 | +      | NM_004463.3    | FGD1    | MANE transcript found on opposite strand only.   |
+			| test | chrom | start    | end      | strand | transcript     | gene    | warning                                                                                     |
+			| 1    | chr9  | 34646787 | 34647088 | +      | NM_000155.4    | GALT    | none                                                                                        |
+			| 2    | chr9  | 34646787 | 34647088 | +      | NM_000155.4    | GALT    | none                                                                                        |
+			| 3    | chr9  | 34647259 | 34647831 | +      | NM_000155.4    | GALT    | none                                                                                        |
+			| 4    | chr9  | 34647259 | 34648114 | +      | NM_000155.4    | GALT    | none                                                                                        |
+			| 5    | chr9  | 34646920 | 34647088 | +      | NM_000155.4    | GALT    | none                                                                                        |
+			| 6    | chr9  | 34646787 | 34647120 | +      | NM_000155.4    | GALT    | none                                                                                        |
+			| 7    | chr9  | 34647259 | 34647474 | +      | NM_000155.4    | GALT    | none                                                                                        |
+			| 8    | chr9  | 34647259 | 34648091 | +      | NM_000155.4    | GALT    | none                                                                                        |
+			| 9    | chr9  | 34647259 | 34648047 | +      | NM_000155.4    | GALT    | none                                                                                        |
+			| 10   | chrX  | 40054043 | 40054255 | -      | NM_001123385.2 | BCOR    | none                                                                                        |
+			| 11   | chrX  | 40054043 | 40054255 | -      | NM_001123385.2 | BCOR    | none                                                                                        |
+			| 12   | chrX  | 40057322 | 40062745 | -      | NM_001123385.2 | BCOR    | none                                                                                        |
+			| 13   | chrX  | 40081196 | 40081258 | +      | NM_001123385.2 | BCOR    | MANE transcript found on opposite strand only.                                              |
+			| 14   | chrX  | 40096604 | 40097680 | +      | NM_001123385.2 | BCOR    | MANE transcript found on opposite strand only.                                              |
+			| 15   | chrX  | 40097722 | 40098095 | +      | NM_001123385.2 | BCOR    | MANE transcript found on opposite strand only.                                              |
+			| 16   | chrX  | 40113978 | 40208244 | -      | unknown        | unknown | no MANE transcript match found                                                              |
+			| 17   | chrX  | 40115468 | 40117489 | +      | unknown        | unknown | no MANE transcript match found                                                              |
+			| 18   | chrX  | 40077970 | 40177006 | -      | NM_001123385.2 | BCOR    | none                                                                                        |
+			| 19   | chrX  | 41086110 | 41123470 | +      | NM_001039591.3 | USP9X   | none                                                                                        |
+			| 20   | chrX  | 41087666 | 41123470 | +      | NM_001039591.3 | USP9X   | none                                                                                        |
+			| 21   | chrX  | 41101571 | 41102912 | -      | NM_001039591.3 | USP9X   | MANE transcript found on opposite strand only.                                              |
+			| 22   | chrX  | 41114762 | 41123470 | +      | NM_001039591.3 | USP9X   | none                                                                                        |
+			| 23   | chrX  | 41123725 | 41128999 | +      | NM_001039591.3 | USP9X   | none                                                                                        |
+			| 24   | chrX  | 41134838 | 41140655 | +      | NM_001039591.3 | USP9X   | none                                                                                        |
+			| 25   | chrX  | 41141436 | 41143290 | +      | NM_001039591.3 | USP9X   | none                                                                                        |
+			| 26   | chrX  | 41144347 | 41144521 | +      | NM_001039591.3 | USP9X   | none                                                                                        |
+			| 27   | chrX  | 41144627 | 41146305 | +      | NM_001039591.3 | USP9X   | none                                                                                        |
+			| 28   | chrX  | 41144627 | 41148373 | +      | NM_001039591.3 | USP9X   | none                                                                                        |
+			| 29   | chrX  | 41148576 | 41152932 | +      | NM_001039591.3 | USP9X   | none                                                                                        |
+			| 30   | chrX  | 41149755 | 41151932 | +      | NM_001039591.3 | USP9X   | none                                                                                        |
+			| 31   | chrX  | 41153082 | 41167481 | +      | NM_001039591.3 | USP9X   | none                                                                                        |
+			| 32   | chrX  | 41198618 | 41205302 | +      | NM_001039591.3 | USP9X   | none                                                                                        |
+			| 33   | chrX  | 41216059 | 41217219 | +      | NM_001039591.3 | USP9X   | none                                                                                        |
+			| 34   | chrX  | 41223403 | 41224806 | +      | NM_001039591.3 | USP9X   | none                                                                                        |
+			| 35   | chrX  | 41229636 | 41230503 | +      | NM_001039591.3 | USP9X   | none                                                                                        |
+			| 36   | chrX  | 53267065 | 53279563 | +      | NM_001111125.3 | IQSEC2  | MANE transcript found on opposite strand only.                                              |
+			| 37   | chrX  | 54445540 | 54446203 | -      | NM_004463.3    | FGD1    | MANE transcript on opposite strand also present.                                            |
+			| 38   | chrX  | 54448698 | 54449551 | +      | NM_004463.3    | FGD1    | MANE transcript found on opposite strand only.                                              |
+			| 39   | chr21 | 45994215 | 46125265 | +      | NA             | NA      | Multiple MANE transcripts found on same strand. Unable to assign transcript. Please supply. |
