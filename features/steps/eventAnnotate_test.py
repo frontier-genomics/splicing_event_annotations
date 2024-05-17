@@ -1,5 +1,8 @@
 from behave import given, when, then
 from src.eventAnnotateProcessor import EventAnnotate
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 # Fetch the MANE transcript for a splicing event
 

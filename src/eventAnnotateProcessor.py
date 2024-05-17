@@ -2,7 +2,7 @@ import logging
 from pydantic import BaseModel
 from typing import List
 
-logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class SplicingCoordinates(BaseModel):
     chrom: str # in [chr1-X] format
@@ -25,32 +25,37 @@ class EventAnnotate:
         
         coordinates = SplicingCoordinates(
             chrom=str(chrom),
-            start=str(start),
-            end=str(end),
+            start=int(start),
+            end=int(end),
             strand=str(strand),
             transcript=str(transcript),
             type=str(input_type )
         )
 
         self.coordinates = coordinates.model_dump()
-
-        logging.debug(f'INITIALIZED:{self.coordinates['chrom']}-{self.coordinates['start']}-{self.coordinates['end']} ({self.coordinates['strand']})[{self.coordinates['transcript']}; {self.coordinates['type']}]')
+        logger.info(f"COORDINATES INITIALIZED: {{'chrom'='{self.coordinates['chrom']}', 'start'={self.coordinates['start']}, 'end'={self.coordinates['end']}, 'strand'='{self.coordinates['strand']}', 'transcript'='{self.coordinates['transcript']}', 'type'='{self.coordinates['type']}'}}")
 
 
     def process(self, dataset, get_annotations = True):
 
         if get_annotations == True:
             self.read_refgene(dataset)
+            logging.info(f"{dataset} annotations loaded")
         else:
             self.refgene = get_annotations
 
         if self.coordinates['transcript'] == "NA":
+            logger.debug(f"Fetching MANE transcript...")
             self.coordinates['transcript'] = self.get_mane_transcript()['transcript']
 
+        logger.debug(f"Matching event start coordinates...")
         start = self.reference_match('start')
+
+        logger.debug(f"Matching event end coordinates...")
         end = self.reference_match('end')
 
         if self.coordinates['strand'] == "*":
+            logger.debug("No valid strand provided. Unable to determine event type.")
             annotations = self._produce_annotation({'event': "",
                     'cryptic': "unknown event (unknown strand)",
                     'supplementary_event': "",
@@ -62,6 +67,7 @@ class EventAnnotate:
                     'event_type': "unknown",
                     'introns': "NA"}, start, end)
         else:
+            logger.debug(f"Fetching transcript annotations...")
             annotations = self.fetch_transcript_annotations(start, end)
 
         self.event = annotations['event']
@@ -70,6 +76,8 @@ class EventAnnotate:
         self.location = annotations['location']
         self.distance_from_authentic = str(annotations['distance_from_authentic'])
 
+        logger.info(f"ANNOTATIONS RETURNED:{{'event'='{self.event}', 'event_type'={self.event_type}, 'introns'={self.introns}, 'location'='{self.location}', 'distance_from_authentic'='{self.distance_from_authentic}}}")
+
         return{'event': self.event,
                'event_type': self.event_type,
                'introns': self.introns,
@@ -77,21 +85,14 @@ class EventAnnotate:
                'distance_from_authentic': self.distance_from_authentic}
 
     def get_mane_transcript(self, base=1):
-        print(f"finding mane transcript match for event")
 
         chrom = self.coordinates['chrom']
         start = self.coordinates['start']
         end = self.coordinates['end']
         strand = self.coordinates['strand']
 
-        print(f"{chrom} {start} {end} {strand}")
-
         matching_rows_start = [entry for entry in self.refgene if entry['start'] <= start and entry['end'] >= start and entry['chrom'] == chrom and entry['mane'] == 'Y']
         matching_rows_end = [entry for entry in self.refgene if entry['start'] <= end and entry['end'] >= end and entry['chrom'] == chrom and entry['mane'] == 'Y']
-        
-        print(f"matching start: \n {matching_rows_start}")
-        print(f"matching end: \n {matching_rows_end}")
-
         matching_rows = matching_rows_start + matching_rows_end
 
         matching_entries = {}
@@ -100,28 +101,29 @@ class EventAnnotate:
 
         matching_entries_unique = [entry for entry in matching_entries.values()]
 
-        print(f"matching transcripts: \n {matching_entries_unique}")
-
         if not matching_entries_unique:
-            print("no MANE transcript match found")
+            warning = "no MANE transcript match found"
+            logger.error(f"MANE TRANSCRIPT NOT FOUND: {warning}")
             return {"transcript": "unknown",
                     "gene": "unknown",
-                    "warning": "no MANE transcript match found"}
+                    "warning": warning}
 
         if len(matching_entries_unique) == 1:
             transcript = matching_entries_unique[0]
 
             if transcript[2] == strand:
                 warning = "none"
+                logger.debug(f"MANE TRANSCRIPT FOUND: {{transcript='{transcript[0]}'}}")
             
             elif strand == "*":
                 self.coordinates['strand'] = transcript[2]
                 warning = "strand not provided - using MANE transcript strand"
+                logger.debug(f"MANE TRANSCRIPT FOUND: {{transcript='{transcript[0]}'}}")
+                logger.warning(f"MANE TRANSCRIPT WARNING: {warning}")
 
             else:
-                print(transcript[2] == strand)
-                print(strand)
                 warning = "MANE transcript found on opposite strand only."
+                logger.warning(f"MANE TRANSCRIPT WARNING: {warning}")
 
         elif len(matching_entries_unique) > 1:
             strand_matches = []
@@ -134,18 +136,18 @@ class EventAnnotate:
             if len(strand_matches) == 1:
                 transcript = strand_matches[0]
                 warning = "MANE transcript on opposite strand also present."
+                logger.debug(f"MANE TRANSCRIPT FOUND: {{transcript='{transcript[0]}'}}")
+                logger.warning(f"MANE TRANSCRIPT WARNING: {warning}")
             else:
                 if len(strand_matches) > 1:
-                    transcript = "NA"
-                    gene = "NA"
+                    transcript = ["NA", "NA"]
                     warning = "Multiple MANE transcripts found on same strand. Unable to assign transcript. Please supply."
+                    logger.error(f"MANE TRANSCRIPT NOT FOUND: {warning}")
                 elif len(other_strand_matches) > 1:
-                    transcript = "NA"
-                    gene = "NA"
+                    transcript = ["NA", "NA"]
                     warning = "Multiple MANE transcripts found on opposite strand. Unable to assign transcript. Please supply."
+                    logger.error(f"MANE TRANSCRIPT NOT FOUND: {warning}")
 
-
-        print(f"MANE match: {transcript[0]}")
         return {"transcript": transcript[0],
                 "gene": transcript[1],
                 "warning": warning}
@@ -165,7 +167,7 @@ class EventAnnotate:
             ValueError: If an invalid start_end choice is provided.
 
         """
-        print(f"finding reference match for {start_end}")
+        #print(f"finding reference match for {start_end}")
         if start_end not in ['start', 'end']:
             raise ValueError("Invalid start_end choice. Please select either 'start' or 'end'.")
 
@@ -176,7 +178,7 @@ class EventAnnotate:
 
         chrom = self.coordinates['chrom']
 
-        print(query)
+        #print(query)
 
         matching_rows = [entry for entry in self.refgene if entry['start'] <= query and entry['end'] >= query and entry['chrom'] == chrom]
 
@@ -211,10 +213,10 @@ class EventAnnotate:
 
             if strand == "-":
                 region_number = int((no_of_exons - index_match) / 2).__floor__()
-                print(f"\tthe region is {region_type} {region_number}")
+                #print(f"\tthe region is {region_type} {region_number}")
             else:
                 region_number = int((index_match) / 2 + 1).__floor__()
-                print(f"\tthe region is {region_type} {region_number}")
+                #print(f"\tthe region is {region_type} {region_number}")
 
             region_dict[tx_id] = {'transcript': tx_id,
                                   'region_type': region_type,
@@ -269,14 +271,14 @@ class EventAnnotate:
             location_raw = "NA"
             location = ""
 
-        print(cryptic)
-        print(supplementary_event)
-        print(location)
-        print(event)
-        print(direction)
-        print(distance)
-        print(alternate)
-        print(alternate_event)
+        #print(cryptic)
+        #print(supplementary_event)
+        #print(location)
+        #print(event)
+        #print(direction)
+        #print(distance)
+        #print(alternate)
+        #print(alternate_event)
 
         annotation_output = AnnotationOutput(
             event=f"{alternate}{supplementary_event}{cryptic}{location}{event}{direction}{distance}{alternate_event}",
@@ -286,11 +288,13 @@ class EventAnnotate:
             distance_from_authentic=str(distance_raw)
         )
 
-        return annotation_output.model_dump()
+        self.annotation_results = annotation_output.model_dump()
+
+        return self.annotation_results
 
     def fetch_transcript_annotations(self, start_matches_all_tx, end_matches_all_tx):
         transcript = self.coordinates['transcript']
-        print(transcript)
+        #print(transcript)
 
         start_matches_all = start_matches_all_tx['matching_rows']
         end_matches_all = end_matches_all_tx['matching_rows']
@@ -302,10 +306,10 @@ class EventAnnotate:
         end_region_all = end_matches_all_tx['region_information']
 
         if transcript not in list(start_region_all.keys()) and transcript not in list(end_region_all.keys()):
-            print(transcript)
-            print(list(start_matches_all_tx.keys()))
-            print(list(end_matches_all_tx.keys()))
-            print("no start or end matches for transcript")
+            #print(transcript)
+            #print(list(start_matches_all_tx.keys()))
+            #print(list(end_matches_all_tx.keys()))
+            #print("no start or end matches for transcript")
             annotation_dict = self._annotate_unannotated(start_region_all, end_region_all)
             return self._produce_annotation(annotation_dict, start_region_all, end_region_all)
         
@@ -336,52 +340,52 @@ class EventAnnotate:
         start_region_all = start_matches_all_tx['region_information']
         end_region_all = end_matches_all_tx['region_information']
 
-        if start_match:
-            print("The start is annotated")
-        else:
-            print("The start is not annotated")
+        # if start_match:
+        #     #print("The start is annotated")
+        # else:
+        #     #print("The start is not annotated")
 
-        if end_match:
-            print("The end is annotated")
-        else:
-            print("The end is not annotated")
+        # if end_match:
+        #     #print("The end is annotated")
+        # else:
+            #print("The end is not annotated")
 
-        print(f"matching starts are \n{start_matches}")
-        print(f"matching ends are \n{end_matches}")
+        #print(f"matching starts are \n{start_matches}")
+        #print(f"matching ends are \n{end_matches}")
 
-        print(f"start region is {start_region}")
-        print(f"end region is {end_region}")
+        #print(f"start region is {start_region}")
+        #print(f"end region is {end_region}")
 
 
         if end_match == False and start_match == False:
-            print("no start or end matches for transcript")
+            #print("no start or end matches for transcript")
             annotation_dict = self._annotate_unannotated(start_region_all, end_region_all)
             return self._produce_annotation(annotation_dict, start_region_all, end_region_all)
         
         elif end_match == False or start_match == False:
             if end_match == False:
-                print("start matches")
+                #print("start matches")
                 annotation_dict = self._annotate_cryptic('end', self.coordinates['end'], start_matches, start_region_all, end_region_all)
                 return self._produce_annotation(annotation_dict, start_region_all, end_region_all)
             
             elif start_match == False:
-                print("end matches")
+                #print("end matches")
                 annotation_dict = self._annotate_cryptic('start', self.coordinates['start'], end_matches, start_region_all, end_region_all)
                 return self._produce_annotation(annotation_dict, start_region_all, end_region_all)
 
         else:
             if self.coordinates['type'] == "ir":
-                print("splicing type is intron retention")
+                #print("splicing type is intron retention")
                 annotation_dict = self._annotate_intron_retention(start_region)
                 return self._produce_annotation(annotation_dict, start_region_all, end_region_all)
 
             elif start_region['region_number'] == end_region['region_number']:
-                print("start and end introns are the same")
+                #print("start and end introns are the same")
                 annotation_dict = self._annotate_canonical(start_region)
                 return self._produce_annotation(annotation_dict, start_region_all, end_region_all)
             
             elif start_region['region_number'] != end_region['region_number']:
-                print("start and end introns are different")
+                #print("start and end introns are different")
                 annotation_dict = self._annotate_exon_skipping(start_region, end_region)
                 return self._produce_annotation(annotation_dict, start_region_all, end_region_all)
 
@@ -390,27 +394,27 @@ class EventAnnotate:
     def _is_alternate_splicing(self, start_matches, end_matches):
         transcript = self.coordinates['transcript']
 
-        print(start_matches)
-        print(end_matches)
+        #print(start_matches)
+        #print(end_matches)
 
         start_match = {k: v for k, v in start_matches.items() if v['transcript'] != transcript and v['match'] == True}
         end_match = {k: v for k, v in end_matches.items() if v['transcript'] != transcript and v['match'] == True}
 
-        print(transcript)
-        print(start_match)
-        print(end_match)
-        print(list(start_match.keys()))
-        print(list(end_match.keys()))
+        #print(transcript)
+        #print(start_match)
+        #print(end_match)
+        #print(list(start_match.keys()))
+        #print(list(end_match.keys()))
 
         filtered_data = {k: v for k, v in start_matches.items() if v['transcript'] != transcript}
 
-        print(filtered_data)
+        #print(filtered_data)
 
         alternate_start_matches = start_match
         alternate_end_matches = end_match
 
-        print(f"matching alternate starts are \n{start_matches}")
-        print(f"matching alternate ends are \n{end_matches}")
+        #print(f"matching alternate starts are \n{start_matches}")
+        #print(f"matching alternate ends are \n{end_matches}")
 
         if not alternate_start_matches or not alternate_end_matches:
             return {'alternate': '', 'alternate_event': ""}
@@ -419,7 +423,7 @@ class EventAnnotate:
             unique_end_transcripts = list(end_match.keys())
 
             transcripts = set(unique_start_transcripts) & set(unique_end_transcripts)
-            print(f"Matching Transcripts {transcripts}")
+            #print(f"Matching Transcripts {transcripts}")
 
             intron_match_transcripts = []
 
@@ -430,17 +434,17 @@ class EventAnnotate:
                     intron_match_transcripts.append(transcript)
 
             transcripts = intron_match_transcripts
-            print(f"Matching Transcripts After Filtering {transcripts}")
+            #print(f"Matching Transcripts After Filtering {transcripts}")
 
             if self.coordinates['type'] == "ir":
                 return {"no current support for alternate intron retention"}
             else:
                 if len(transcripts) > 1:
-                    print("all alternate start and end match transcripts match each other")
-                    print(f"Number of unique start matches: {len(unique_start_transcripts)}")
-                    print(f"Number of unique end matches: {len(unique_end_transcripts)}")
-                    print(unique_start_transcripts)
-                    print(transcripts)
+                    #print("all alternate start and end match transcripts match each other")
+                    #print(f"Number of unique start matches: {len(unique_start_transcripts)}")
+                    #print(f"Number of unique end matches: {len(unique_end_transcripts)}")
+                    #print(unique_start_transcripts)
+                    #print(transcripts)
                     transcripts_str = ', '.join(sorted(transcripts))
                     return {'alternate': 'alternate ', 'cryptic': '', 'alternate_event': f" ({transcripts_str})"}
                 elif len(transcripts) == 1:
@@ -454,7 +458,7 @@ class EventAnnotate:
     def _annotate_cryptic(self, start_end, var_position, all_matches, start_region, end_region):
         #Set cryptic to cryptic
         cryptic = "cryptic "
-        print("identified a cryptic")
+        #print("identified a cryptic")
 
         #Set event to acceptor/donor and calculate distance, based on strand
         strand = self.coordinates['strand']
@@ -466,12 +470,12 @@ class EventAnnotate:
 
         matches = [entry for entry in all_matches if entry['id'] == transcript][0]            
 
-        print(matches)
+        #print(matches)
 
         start = start_region[transcript]
         end = end_region[transcript]
 
-        print(start_end)
+        #print(start_end)
 
         if start_end == "start":
             location = f"{start['region_type']} {start['region_number']} "
@@ -499,23 +503,23 @@ class EventAnnotate:
                 position = matches['exons'][start['start-index'] + 1]
             
         
-        print(location)
-        print(position)
-        print(other_region_number)
-        print(introns)
+        #print(location)
+        #print(position)
+        #print(other_region_number)
+        #print(introns)
 
         if location == "intergenic -1 ":
-            print("INTERGENIC CRYPTIC")
+            #print("INTERGENIC CRYPTIC")
             supp_event = ""
             supp_event_type = ""
             intron = "NA"
             location = "intergenic "
         elif location not in [f"intron {other_region_number} ", f"exon {other_region_number} ", f"exon {other_region_number+1} "]:
-            print("but event spans multiple introns")
+            #print("but event spans multiple introns")
             if region_type == "exon" and region_number > other_region_number:
-                print("region_type: exon")
+                #print("region_type: exon")
                 introns[0] = introns[0] - 1
-            print(introns)
+            #print(introns)
             supp = self._annotate_supplementary(introns)
             supp_event = supp['event']
             supp_event_type = supp["supp_event_type"]
@@ -524,37 +528,37 @@ class EventAnnotate:
             supp_event = ""
             supp_event_type = ""
             intron = min(introns)
-            print("well we made it to here.")
+            #print("well we made it to here.")
 
-        print("do we make it to here?")
-        print(strand)
+        #print("do we make it to here?")
+        #print(strand)
 
         if start_end == "start":
             if strand == "+":
                 event = "donor"
                 modifier = 1 if location == f"exon {start['region_number']} " else 0
                 distance = query_start - position - modifier
-                print(f"The calculation is {query_start} - {position} + {modifier} = {distance}")
+                #print(f"The calculation is {query_start} - {position} + {modifier} = {distance}")
             elif strand == "-":
                 event = "acceptor"
                 modifier = 1 if location in [f"exon {start['region_number']} ", "intergenic "] else 0
                 distance = position - query_start + modifier
-                print(f"The calculation is {position} - {query_start} + {modifier} = {distance}")
+                #print(f"The calculation is {position} - {query_start} + {modifier} = {distance}")
         elif start_end == "end":
             if strand == "+":
                 event = "acceptor"
                 modifier = 1 if location == f"intron {end['region_number']} " else 0
                 distance = query_end - position - modifier
-                print(f"The calculation is {query_end} - {position} - {modifier} = {distance}")
+                #print(f"The calculation is {query_end} - {position} - {modifier} = {distance}")
             elif strand == "-":
                 event = "donor"
                 modifier = 1 if location == f"intron {end['region_number']} " else 0
                 distance = position - query_end + modifier
-                print(f"The calculation is {position} - {query_end}  + {modifier} = {distance}")
+                #print(f"The calculation is {position} - {query_end}  + {modifier} = {distance}")
         else:
             print(f"{start_end}: this isn't working.")
         
-        print(event)
+        #print(event)
 
         direction = " @ +" if distance > 0 else " @ "
 
@@ -570,18 +574,18 @@ class EventAnnotate:
                 'introns': intron}
 
     def _annotate_unannotated(self, start_region_all, end_region_all):
-        print("no start or end matches for transcript identified")
+        #print("no start or end matches for transcript identified")
         
         tx = self.coordinates['transcript']
 
-        print(tx)
+        #print(tx)
 
 
         start_match = {k: v for k, v in start_region_all.items() if v['transcript'] == tx}
         end_match = {k: v for k, v in end_region_all.items() if v['transcript'] == tx}
 
-        print(start_match)
-        print(end_match)
+        #print(start_match)
+        #print(end_match)
     
         if not start_match:
             region_1 = "intergenic"
@@ -597,14 +601,14 @@ class EventAnnotate:
             region_2 = end_match[tx]['region_type']
             strand_2 = end_match[tx]['strand']
         
-        print(region_1)
-        print(region_2)
+        #print(region_1)
+        #print(region_2)
 
-        print(start_match)
-        print(end_match)
+        #print(start_match)
+        #print(end_match)
         
         if region_1 == "intron" and region_2 == "intron":
-            print("both start and end are within introns")
+            #print("both start and end are within introns")
             strand_check = strand_1 == self.coordinates['strand']
             strand_in = " (opposite strand)" if not strand_check else ""
             return {'event': f"junction{strand_in}",

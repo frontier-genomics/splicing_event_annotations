@@ -1,7 +1,5 @@
 import logging
 
-logging.basicConfig(level=logging.INFO)
-
 class TsvAnnotate:
 
     def __init__(self, tsv, dataset, columns = [0,1,2,3,4,5], header = True):
