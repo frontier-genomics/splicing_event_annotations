@@ -36,11 +36,11 @@ class EventAnnotate:
         logger.info(f"COORDINATES INITIALIZED: {{'chrom'='{self.coordinates['chrom']}', 'start'={self.coordinates['start']}, 'end'={self.coordinates['end']}, 'strand'='{self.coordinates['strand']}', 'transcript'='{self.coordinates['transcript']}', 'type'='{self.coordinates['type']}'}}")
 
 
-    def process(self, dataset, get_annotations = True):
+    def process(self, dataset, genome, get_annotations = True):
 
         if get_annotations == True:
-            self.read_refgene(dataset)
-            logging.info(f"{dataset} annotations loaded")
+            self.read_refgene(dataset, genome)
+            logging.info(f"{dataset} {genome} annotations loaded")
         else:
             self.refgene = get_annotations
 
@@ -754,9 +754,9 @@ class EventAnnotate:
                 'supp_event_type': 'exon skipping, ',
                 'introns': introns}
     
-    def read_refgene(self, dataset):
+    def read_refgene(self, dataset, genome):
         if dataset == "refseq":
-            input_file = "reference/genes.refGene"
+            input_file = f"reference/{genome}/genes.refGene"
         elif dataset == "ensembl":
             raise ValueError("Ensembl annotations are currently not supported. Please try again with 'refseq'.")
         else:

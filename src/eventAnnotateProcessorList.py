@@ -3,14 +3,14 @@ from src.eventAnnotateProcessor import EventAnnotate
 
 class EventAnnotateList:
 
-    def __init__(self, inputs, dataset):
+    def __init__(self, inputs, dataset, genome):
         self.inputs = inputs
-        self.annotations = self.load_annotations(dataset)
+        self.annotations = self.load_annotations(dataset, genome)
 
-    def load_annotations(self, dataset):
+    def load_annotations(self, dataset, genome):
         first_input = self.inputs[0]
         event_annotate = EventAnnotate(first_input['chrom'], first_input['start'], first_input['end'], first_input['strand'], first_input['transcript'], first_input['type'])
-        self.annotations = event_annotate.read_refgene(dataset)
+        self.annotations = event_annotate.read_refgene(dataset, genome)
         logging.info(f"{dataset} annotations loaded")
 
         return self.annotations
@@ -20,6 +20,6 @@ class EventAnnotateList:
         self.outputs = []
         for input in self.inputs:
             event_annotate = EventAnnotate(input['chrom'], input['start'], input['end'], input['strand'], input['transcript'], input['type'])
-            output = event_annotate.process('refseq', get_annotations=self.annotations)
+            output = event_annotate.process('refseq', get_annotations=self.annotations, genome='hg38')
             self.outputs.append(output)
         return self.outputs
