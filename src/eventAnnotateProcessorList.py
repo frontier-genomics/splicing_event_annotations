@@ -19,6 +19,8 @@ class EventAnnotateList:
         logging.info(f'Processing {len(self.inputs)} inputs')
         self.outputs = []
         for input in self.inputs:
+            index = self.inputs.index(input) + 1
+            logging.info(f'Processing input {index}/{len(self.inputs)}')
             event_annotate = EventAnnotate(input['chrom'], input['start'], input['end'], input['strand'], input['transcript'], input['type'])
             output = event_annotate.process('refseq', get_annotations=self.annotations, genome='hg38')
             self.outputs.append(output)
