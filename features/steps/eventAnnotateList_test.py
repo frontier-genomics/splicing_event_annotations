@@ -30,7 +30,8 @@ def step_impl(context, dataset):
 def step_impl(context):
     context.annotation_list = EventAnnotateList(
         inputs=context.splicing_events,
-        dataset=context.dataset
+        dataset=context.dataset,
+        genome='hg38'
     )
 
     context.annotation_list.process()

@@ -28,7 +28,7 @@ def step_impl(context):
         input_type = context.input['type']
     )
 
-    context.annotation.process('refseq')
+    context.annotation.process('refseq', 'hg38')
 
     context.transcript = context.annotation.get_mane_transcript()
 
@@ -75,7 +75,7 @@ def step_impl(context):
         input_type = context.input['type']
     )
 
-    context.annotation.process('refseq')
+    context.annotation.process('refseq', 'hg38')
     
 
 @then(u'the resulting annotations of canonical splicing should be event {event} of type {event_type} at intron {intron}')
@@ -119,7 +119,7 @@ def step_impl(context):
         input_type = context.input['type'],
     )
 
-    context.annotation.process('refseq')
+    context.annotation.process('refseq', 'hg38')
     
 @then(u'the resulting annotations of exon skipping should be event {event} of type {event_type} at intron {intron}')
 def step_impl(context, event, event_type, intron):
@@ -162,7 +162,7 @@ def step_impl(context):
         input_type = context.input['type'],
     )
 
-    context.annotation.process('refseq')
+    context.annotation.process('refseq', 'hg38')
     
 @then(u'the resulting annotations of intron retention should be event {event} of type {event_type} at intron {intron}')
 def step_impl(context, event, event_type, intron):
@@ -205,7 +205,7 @@ def step_impl(context):
         input_type = context.input['type'],
     )
 
-    context.annotation.process('refseq')
+    context.annotation.process('refseq', 'hg38')
     
 @then(u'the resulting annotations of cryptic donors should be event {event} of location {location} and type {event_type} at intron {intron} at a distance of {distance_from_authentic}')
 def step_impl(context, event, event_type, intron, location, distance_from_authentic):
@@ -254,7 +254,7 @@ def step_impl(context):
         input_type = context.input['type'],
     )
 
-    context.annotation.process('refseq')
+    context.annotation.process('refseq', 'hg38')
     
 @then(u'the resulting annotations of cryptic acceptors should be event {event} of location {location} and type {event_type} at intron {intron} at a distance of {distance_from_authentic}')
 def step_impl(context, event, event_type, intron, location, distance_from_authentic):
@@ -303,7 +303,7 @@ def step_impl(context):
         input_type = context.input['type'],
     )
 
-    context.annotation.process('refseq')
+    context.annotation.process('refseq', 'hg38')
     
 @then(u'the resulting annotations of skip-cryps should be event {event} of location {location} and type {event_type} at intron {intron} at a distance of {distance_from_authentic}')
 def step_impl(context, event, event_type, intron, location, distance_from_authentic):
@@ -352,7 +352,7 @@ def step_impl(context):
         input_type = context.input['type'],
     )
 
-    context.annotation.process('refseq')
+    context.annotation.process('refseq', 'hg38')
     
 @then(u'the resulting annotations of unannotated junctions should be event {event} of location {location} and type {event_type} at intron {intron}')
 def step_impl(context, event, event_type, intron, location):
@@ -395,7 +395,7 @@ def step_impl(context):
         input_type = context.input['type'],
     )
 
-    context.annotation.process('refseq')
+    context.annotation.process('refseq', 'hg38')
     
 @then(u'the resulting annotations of alternate splicing should be event {event} of location {location} and type {event_type} at intron {intron} at a distance of {distance_from_authentic}')
 def step_impl(context, event, event_type, intron, location, distance_from_authentic):

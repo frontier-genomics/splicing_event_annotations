@@ -3,14 +3,14 @@ from src.eventAnnotateProcessorList import EventAnnotateList
 from src.tsvAnnotateProcessor import TsvAnnotate
 import csv
 
-def run_workflow(input, dataset, tsv = False, columns = [0,1,2,3,4,5], output_file = ""):
+def run_workflow(input, dataset, genome, tsv = False, columns = [0,1,2,3,4,5], output_file = ""):
 
     if tsv == True:
         tsv_processor = TsvAnnotate(input, dataset, columns)
         input = tsv_processor.tsv
 
     if isinstance(input, list):
-        processor = EventAnnotateList(input, dataset)
+        processor = EventAnnotateList(input, dataset, genome)
     else:
         processor = EventAnnotate(input['chrom'], input['start'], input['end'], input['strand'], input['transcript'], input['type'])
 
