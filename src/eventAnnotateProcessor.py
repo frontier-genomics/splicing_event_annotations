@@ -18,6 +18,7 @@ class AnnotationOutput(BaseModel):
     introns: str
     location: str # intron number or exon number or intergenic or NA
     distance_from_authentic: str # or "NA"
+    transcript: str
 
 class EventAnnotate:
 
@@ -75,6 +76,7 @@ class EventAnnotate:
         self.introns = str(annotations['introns'])
         self.location = annotations['location']
         self.distance_from_authentic = str(annotations['distance_from_authentic'])
+        self.transcript = str(annotations['transcript'])
 
         logger.info(f"ANNOTATIONS RETURNED:{{'event'='{self.event}', 'event_type'={self.event_type}, 'introns'={self.introns}, 'location'='{self.location}', 'distance_from_authentic'='{self.distance_from_authentic}}}")
 
@@ -82,7 +84,8 @@ class EventAnnotate:
                'event_type': self.event_type,
                'introns': self.introns,
                'location': self.location,
-               'distance_from_authentic': self.distance_from_authentic}
+               'distance_from_authentic': self.distance_from_authentic,
+               'transcript': self.transcript}
 
     def get_mane_transcript(self, base=1):
 
@@ -228,7 +231,7 @@ class EventAnnotate:
 
         return region_dict
 
-    def _produce_annotation(self, annotation, start_matches, end_matches):
+    def _produce_annotation(self, annotation, start_matches, end_matches, event_transcript = 'NA'):
         """
         Produces an annotation string based on the given annotation dictionary.
 
@@ -285,7 +288,8 @@ class EventAnnotate:
             event_type=event_type,
             introns=str(introns),
             location=location_raw.strip(),
-            distance_from_authentic=str(distance_raw)
+            distance_from_authentic=str(distance_raw),
+            transcript=event_transcript
         )
 
         self.annotation_results = annotation_output.model_dump()
@@ -311,7 +315,7 @@ class EventAnnotate:
             #print(list(end_matches_all_tx.keys()))
             #print("no start or end matches for transcript")
             annotation_dict = self._annotate_unannotated(start_region_all, end_region_all)
-            return self._produce_annotation(annotation_dict, start_region_all, end_region_all)
+            return self._produce_annotation(annotation_dict, start_region_all, end_region_all, transcript)
         
         if transcript not in list(start_region_all.keys()):
             start_region_all[transcript] = {'transcript': transcript,
@@ -360,34 +364,34 @@ class EventAnnotate:
         if end_match == False and start_match == False:
             #print("no start or end matches for transcript")
             annotation_dict = self._annotate_unannotated(start_region_all, end_region_all)
-            return self._produce_annotation(annotation_dict, start_region_all, end_region_all)
+            return self._produce_annotation(annotation_dict, start_region_all, end_region_all, transcript)
         
         elif end_match == False or start_match == False:
             if end_match == False:
                 #print("start matches")
                 annotation_dict = self._annotate_cryptic('end', self.coordinates['end'], start_matches, start_region_all, end_region_all)
-                return self._produce_annotation(annotation_dict, start_region_all, end_region_all)
+                return self._produce_annotation(annotation_dict, start_region_all, end_region_all, transcript)
             
             elif start_match == False:
                 #print("end matches")
                 annotation_dict = self._annotate_cryptic('start', self.coordinates['start'], end_matches, start_region_all, end_region_all)
-                return self._produce_annotation(annotation_dict, start_region_all, end_region_all)
+                return self._produce_annotation(annotation_dict, start_region_all, end_region_all, transcript)
 
         else:
             if self.coordinates['type'] == "ir":
                 #print("splicing type is intron retention")
                 annotation_dict = self._annotate_intron_retention(start_region)
-                return self._produce_annotation(annotation_dict, start_region_all, end_region_all)
+                return self._produce_annotation(annotation_dict, start_region_all, end_region_all, transcript)
 
             elif start_region['region_number'] == end_region['region_number']:
                 #print("start and end introns are the same")
                 annotation_dict = self._annotate_canonical(start_region)
-                return self._produce_annotation(annotation_dict, start_region_all, end_region_all)
+                return self._produce_annotation(annotation_dict, start_region_all, end_region_all, transcript)
             
             elif start_region['region_number'] != end_region['region_number']:
                 #print("start and end introns are different")
                 annotation_dict = self._annotate_exon_skipping(start_region, end_region)
-                return self._produce_annotation(annotation_dict, start_region_all, end_region_all)
+                return self._produce_annotation(annotation_dict, start_region_all, end_region_all, transcript)
 
             return({'transcript': "unknown", 'event': "unknown event"})
 
