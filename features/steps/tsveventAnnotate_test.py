@@ -12,9 +12,9 @@ def step_impl(context, dataset):
 
 @when(u'the tsv of splicing events is annotated')
 def step_impl(context):
-    context.output = main.run_workflow(context.tsv, context.dataset, tsv = True, columns = [2,3,4,6,25])
+    context.output = main.run_workflow(context.tsv, context.dataset, genome = "hg38", tsv = True, columns = [2,3,4,6,25])
     print(context.output)
-    main.write_output(context.output, 'output.tsv')
+    main.write_output(context.output, 'resources/test_output.tsv')
 
 @then(u'the resulting annotated tsv should be {output}')
 def step_impl(context, output):

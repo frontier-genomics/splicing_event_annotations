@@ -34,7 +34,7 @@ class EventAnnotate:
         )
 
         self.coordinates = coordinates.model_dump()
-        logger.info(f"COORDINATES INITIALIZED: {{'chrom'='{self.coordinates['chrom']}', 'start'={self.coordinates['start']}, 'end'={self.coordinates['end']}, 'strand'='{self.coordinates['strand']}', 'transcript'='{self.coordinates['transcript']}', 'type'='{self.coordinates['type']}'}}")
+        logger.debug(f"COORDINATES INITIALIZED: {{'chrom'='{self.coordinates['chrom']}', 'start'={self.coordinates['start']}, 'end'={self.coordinates['end']}, 'strand'='{self.coordinates['strand']}', 'transcript'='{self.coordinates['transcript']}', 'type'='{self.coordinates['type']}'}}")
 
 
     def process(self, dataset, genome, get_annotations = True):
@@ -78,7 +78,7 @@ class EventAnnotate:
         self.distance_from_authentic = str(annotations['distance_from_authentic'])
         self.transcript = str(annotations['transcript'])
 
-        logger.info(f"ANNOTATIONS RETURNED:{{'event'='{self.event}', 'event_type'={self.event_type}, 'introns'={self.introns}, 'location'='{self.location}', 'distance_from_authentic'='{self.distance_from_authentic}}}")
+        logger.debug(f"ANNOTATIONS RETURNED:{{'event'='{self.event}', 'event_type'={self.event_type}, 'introns'={self.introns}, 'location'='{self.location}', 'distance_from_authentic'='{self.distance_from_authentic}}}")
 
         return{'event': self.event,
                'event_type': self.event_type,
