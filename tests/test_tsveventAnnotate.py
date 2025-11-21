@@ -5,33 +5,26 @@ import logging
 
 scenarios('tsveventAnnotate.feature')
 
-@pytest.fixture
-def tsv_path():
-    return {}
+@given(parsers.parse('the splicing event tsv {tsv}'), target_fixture='tsv_path')
+def given_tsv(tsv):
+    """Store the TSV path."""
+    return tsv
 
-@pytest.fixture
-def dataset_info():
-    return {}
+@given(parsers.parse('the annotation dataset for the tsv is {dataset}'), target_fixture='dataset_info')
+def given_dataset(dataset):
+    """Store the dataset name."""
+    return dataset
 
-@pytest.fixture
-def output_result():
-    return None
-
-@given(parsers.parse('the splicing event tsv {tsv}'))
-def given_tsv(tsv_path, tsv):
-    tsv_path['value'] = tsv
-
-@given(parsers.parse('the annotation dataset for the tsv is {dataset}'))
-def given_dataset(dataset_info, dataset):
-    dataset_info['value'] = dataset
-
-@when(parsers.parse('the tsv of splicing events is annotated'), target_fixture='output_result')
+@when('the tsv of splicing events is annotated', target_fixture='output_result')
 def annotate_tsv(tsv_path, dataset_info):
-    output = main.run_workflow(tsv_path['value'], dataset_info['value'], tsv=True, columns=[2,3,4,6,25])
+    """Annotate the TSV file."""
+    output = main.run_workflow(tsv_path, dataset_info, tsv=True, columns=[2,3,4,6,25])
     print(output)
     main.write_output(output, 'output.tsv')
     return output
 
 @then(parsers.parse('the resulting annotated tsv should be {output}'))
 def verify_tsv_output(output_result, output):
+    """Verify the TSV output."""
     raise NotImplementedError(u'STEP: Then the resulting annotated tsv should be "resources/test_output.tsv"')
+

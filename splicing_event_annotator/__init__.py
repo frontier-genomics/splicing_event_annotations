@@ -1,0 +1,1 @@
+# Splicing Event Annotator package

@@ -7,22 +7,14 @@ logging.basicConfig(level=logging.DEBUG)
 
 scenarios('eventAnnotateList.feature')
 
-@pytest.fixture
-def splicing_events():
-    return []
-
-@pytest.fixture
-def dataset_name():
-    return {}
-
-@pytest.fixture
-def annotation_list_result():
-    return None
-
-@given(parsers.parse('the splicing events'))
-def given_splicing_events(splicing_events, datatable):
-    for row in datatable:
-        row_values = list(row.values())
+@given('the splicing events')
+def given_splicing_events(datatable):
+    """Store splicing events from datatable."""
+    # datatable is list of lists with headers in first row
+    headers = datatable[0]
+    events = []
+    
+    for row_values in datatable[1:]:
         row_dict = {
             'chrom': row_values[1],
             'start': row_values[2],
@@ -31,27 +23,32 @@ def given_splicing_events(splicing_events, datatable):
             'type': row_values[5],
             'transcript': row_values[6]
         }
-        splicing_events.append(row_dict)
+        events.append(row_dict)
+    
+    return events
 
-@given(parsers.parse('the annotation dataset is {dataset}'))
-def given_annotation_dataset(dataset_name, dataset):
-    dataset_name['value'] = dataset
+@given(parsers.parse('the annotation dataset is {dataset}'), target_fixture='dataset_name')
+def given_annotation_dataset(dataset):
+    """Store the annotation dataset name."""
+    return dataset
 
-@when(parsers.parse('the list of splicing events is annotated'), target_fixture='annotation_list_result')
-def annotate_splicing_events(splicing_events, dataset_name):
+@when('the list of splicing events is annotated', target_fixture='annotation_list_result')
+def annotate_splicing_events(given_splicing_events, dataset_name):
+    """Annotate the list of splicing events."""
     annotation_list = EventAnnotateList(
-        inputs=splicing_events,
-        dataset=dataset_name['value'],
+        inputs=given_splicing_events,
+        dataset=dataset_name,
         genome='hg38'
     )
     annotation_list.process()
     return annotation_list
 
-@then(parsers.parse('the resulting annotations should be'))
+@then('the resulting annotations should be')
 def verify_annotations(annotation_list_result, datatable):
+    """Verify the annotations match expected output."""
+    # datatable is list of lists with headers in first row
     annotations = []
-    for row in datatable:
-        row_values = list(row.values())
+    for row_values in datatable[1:]:
         row_dict = {
             'event': row_values[4],
             'event_type': row_values[1],
@@ -65,3 +62,4 @@ def verify_annotations(annotation_list_result, datatable):
     print(f"\n\n and this is what was expected: \n\n {annotations}")
     
     assert annotation_list_result.outputs == annotations
+
