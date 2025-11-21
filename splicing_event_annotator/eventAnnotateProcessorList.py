@@ -5,6 +5,8 @@ class EventAnnotateList:
 
     def __init__(self, inputs, dataset, genome):
         self.inputs = inputs
+        self.dataset = dataset
+        self.genome = genome
         self.annotations = self.load_annotations(dataset, genome)
 
     def load_annotations(self, dataset, genome):
@@ -22,6 +24,6 @@ class EventAnnotateList:
             index = self.inputs.index(input) + 1
             logging.info(f'Processing input {index}/{len(self.inputs)}')
             event_annotate = EventAnnotate(input['chrom'], input['start'], input['end'], input['strand'], input['transcript'], input['type'])
-            output = event_annotate.process('refseq', get_annotations=self.annotations, genome='hg38')
+            output = event_annotate.process(self.dataset, self.genome, get_annotations=self.annotations)
             self.outputs.append(output)
         return self.outputs
