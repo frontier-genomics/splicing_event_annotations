@@ -1,4 +1,4 @@
 #!/bin/bash
 
-# Run behave but ignore tests that are marked as WIP
-behave --tags=~@wip
+# Run pytest but ignore tests that are marked as WIP
+pytest tests/ -m "not wip" -v

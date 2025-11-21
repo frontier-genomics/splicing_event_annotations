@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 src/__pycache__/
+splicing_event_annotator/__pycache__/
 *.DS_Store
 .coverage
 coverage*
