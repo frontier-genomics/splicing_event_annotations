@@ -3,7 +3,7 @@ from pytest_bdd import given, when, then, scenarios, parsers
 from splicing_event_annotator.eventAnnotateProcessor import EventAnnotate
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.WARNING)
 
 scenarios('eventAnnotate.feature')
 
@@ -22,7 +22,7 @@ def splicing_event(chrom, start, end, strand):
     }
 
 @when('the overlapping transcripts are fetched', target_fixture='transcript_result')
-def fetch_transcripts(event_input):
+def fetch_transcripts(event_input, refgene_annotations):
     """Fetch overlapping transcripts."""
     annotation = EventAnnotate(
         chrom=event_input['chrom'],
@@ -32,7 +32,7 @@ def fetch_transcripts(event_input):
         transcript=event_input['transcript'],
         input_type=event_input['type']
     )
-    annotation.process('refseq', 'hg38')
+    annotation.process('refseq', 'hg38', get_annotations=refgene_annotations)
     return annotation.get_mane_transcript()
 
 @then(parsers.parse('the result should be transcript {transcript}, gene {gene}, and warning {warning}'))
@@ -68,7 +68,7 @@ def canonical_annotation_dataset(annotation):
     pass  # Dataset is stored but not used in this step
 
 @when('the canonical splicing events are annotated with the annotation dataset', target_fixture='canonical_annotation')
-def annotate_canonical(event_input):
+def annotate_canonical(event_input, refgene_annotations):
     """Annotate canonical splicing events."""
     annotation = EventAnnotate(
         chrom=event_input['chrom'],
@@ -78,7 +78,7 @@ def annotate_canonical(event_input):
         transcript=event_input['transcript'],
         input_type=event_input['type']
     )
-    annotation.process('refseq', 'hg38')
+    annotation.process('refseq', 'hg38', get_annotations=refgene_annotations)
     return annotation
 
 @then(parsers.parse('the resulting annotations of canonical splicing should be event {event} of type {event_type} at intron {intron}'))
@@ -114,7 +114,7 @@ def exon_skipping_annotation_dataset(annotation):
     pass
 
 @when('the exon skipping events are annotated with the annotation dataset', target_fixture='exon_skipping_annotation')
-def annotate_exon_skipping(event_input):
+def annotate_exon_skipping(event_input, refgene_annotations):
     """Annotate exon skipping events."""
     annotation = EventAnnotate(
         chrom=event_input['chrom'],
@@ -124,7 +124,7 @@ def annotate_exon_skipping(event_input):
         transcript=event_input['transcript'],
         input_type=event_input['type']
     )
-    annotation.process('refseq', 'hg38')
+    annotation.process('refseq', 'hg38', get_annotations=refgene_annotations)
     return annotation
 
 @then(parsers.parse('the resulting annotations of exon skipping should be event {event} of type {event_type} at intron {intron}'))
@@ -160,7 +160,7 @@ def intron_retention_annotation_dataset(annotation):
     pass
 
 @when('the intron retention events are annotated with the annotation dataset', target_fixture='intron_retention_annotation')
-def annotate_intron_retention(event_input):
+def annotate_intron_retention(event_input, refgene_annotations):
     """Annotate intron retention events."""
     annotation = EventAnnotate(
         chrom=event_input['chrom'],
@@ -170,7 +170,7 @@ def annotate_intron_retention(event_input):
         transcript=event_input['transcript'],
         input_type=event_input['type']
     )
-    annotation.process('refseq', 'hg38')
+    annotation.process('refseq', 'hg38', get_annotations=refgene_annotations)
     return annotation
 
 @then(parsers.parse('the resulting annotations of intron retention should be event {event} of type {event_type} at intron {intron}'))
@@ -206,7 +206,7 @@ def cryptic_donor_annotation_dataset(annotation):
     pass
 
 @when('the cryptic donor events are annotated with the annotation dataset', target_fixture='cryptic_donor_annotation')
-def annotate_cryptic_donor(event_input):
+def annotate_cryptic_donor(event_input, refgene_annotations):
     """Annotate cryptic donor events."""
     annotation = EventAnnotate(
         chrom=event_input['chrom'],
@@ -216,7 +216,7 @@ def annotate_cryptic_donor(event_input):
         transcript=event_input['transcript'],
         input_type=event_input['type']
     )
-    annotation.process('refseq', 'hg38')
+    annotation.process('refseq', 'hg38', get_annotations=refgene_annotations)
     return annotation
 
 @then(parsers.parse('the resulting annotations of cryptic donors should be event {event} of location {location} and type {event_type} at intron {intron} at a distance of {distance_from_authentic}'))
@@ -258,7 +258,7 @@ def cryptic_acceptor_annotation_dataset(annotation):
     pass
 
 @when('the cryptic acceptor events are annotated with the annotation dataset', target_fixture='cryptic_acceptor_annotation')
-def annotate_cryptic_acceptor(event_input):
+def annotate_cryptic_acceptor(event_input, refgene_annotations):
     """Annotate cryptic acceptor events."""
     annotation = EventAnnotate(
         chrom=event_input['chrom'],
@@ -268,7 +268,7 @@ def annotate_cryptic_acceptor(event_input):
         transcript=event_input['transcript'],
         input_type=event_input['type']
     )
-    annotation.process('refseq', 'hg38')
+    annotation.process('refseq', 'hg38', get_annotations=refgene_annotations)
     return annotation
 
 @then(parsers.parse('the resulting annotations of cryptic acceptors should be event {event} of location {location} and type {event_type} at intron {intron} at a distance of {distance_from_authentic}'))
@@ -310,7 +310,7 @@ def skip_cryp_annotation_dataset(annotation):
     pass
 
 @when('the skip-cryp events are annotated with the annotation dataset', target_fixture='skip_cryp_annotation')
-def annotate_skip_cryp(event_input):
+def annotate_skip_cryp(event_input, refgene_annotations):
     """Annotate skip-cryp events."""
     annotation = EventAnnotate(
         chrom=event_input['chrom'],
@@ -320,7 +320,7 @@ def annotate_skip_cryp(event_input):
         transcript=event_input['transcript'],
         input_type=event_input['type']
     )
-    annotation.process('refseq', 'hg38')
+    annotation.process('refseq', 'hg38', get_annotations=refgene_annotations)
     return annotation
 
 @then(parsers.parse('the resulting annotations of skip-cryps should be event {event} of location {location} and type {event_type} at intron {intron} at a distance of {distance_from_authentic}'))
@@ -362,7 +362,7 @@ def unannotated_junction_annotation_dataset(annotation):
     pass
 
 @when('the unannotated junctions are annotated with the annotation dataset', target_fixture='unannotated_junction_annotation')
-def annotate_unannotated_junction(event_input):
+def annotate_unannotated_junction(event_input, refgene_annotations):
     """Annotate unannotated junction events."""
     annotation = EventAnnotate(
         chrom=event_input['chrom'],
@@ -372,7 +372,7 @@ def annotate_unannotated_junction(event_input):
         transcript=event_input['transcript'],
         input_type=event_input['type']
     )
-    annotation.process('refseq', 'hg38')
+    annotation.process('refseq', 'hg38', get_annotations=refgene_annotations)
     return annotation
 
 @then(parsers.parse('the resulting annotations of unannotated junctions should be event {event} of location {location} and type {event_type} at intron {intron}'))
@@ -408,7 +408,7 @@ def alternate_splicing_annotation_dataset(annotation):
     pass
 
 @when('the alternate splicing events are annotated with the annotation dataset', target_fixture='alternate_splicing_annotation')
-def annotate_alternate_splicing(event_input):
+def annotate_alternate_splicing(event_input, refgene_annotations):
     """Annotate alternate splicing events."""
     annotation = EventAnnotate(
         chrom=event_input['chrom'],
@@ -418,7 +418,7 @@ def annotate_alternate_splicing(event_input):
         transcript=event_input['transcript'],
         input_type=event_input['type']
     )
-    annotation.process('refseq', 'hg38')
+    annotation.process('refseq', 'hg38', get_annotations=refgene_annotations)
     return annotation
 
 @then(parsers.parse('the resulting annotations of alternate splicing should be event {event} of location {location} and type {event_type} at intron {intron} at a distance of {distance_from_authentic}'))

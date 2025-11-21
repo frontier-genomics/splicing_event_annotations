@@ -40,8 +40,11 @@ class EventAnnotate:
     def process(self, dataset, genome, get_annotations = True):
 
         if get_annotations == True:
-            self.read_refgene(dataset, genome)
+            self.refgene = EventAnnotate.read_refgene(dataset, genome)
             logging.info(f"{dataset} {genome} annotations loaded")
+        elif isinstance(get_annotations, list):
+            # Pre-loaded annotations passed in
+            self.refgene = get_annotations
         else:
             self.refgene = get_annotations
 
@@ -758,7 +761,8 @@ class EventAnnotate:
                 'supp_event_type': 'exon skipping, ',
                 'introns': introns}
     
-    def read_refgene(self, dataset, genome):
+    @staticmethod
+    def read_refgene(dataset, genome):
         if dataset == "refseq":
             input_file = f"reference/{genome}/genes.refGene"
         elif dataset == "ensembl":
@@ -766,11 +770,10 @@ class EventAnnotate:
         else:
             raise ValueError("Invalid annotation choice. Please select either 'refseq' or 'ensembl' (currently not supported).")
         
-        self.refgene = self.read_genepred(input_file, skip_first_column=True)
+        return EventAnnotate.read_genepred(input_file, skip_first_column=True)
 
-        return self.refgene
-
-    def read_genepred(self, input_file, skip_first_column=False):
+    @staticmethod
+    def read_genepred(input_file, skip_first_column=False):
         """
         GenePred extension format:
         http://genome.ucsc.edu/FAQ/FAQformat.html#GenePredExt
