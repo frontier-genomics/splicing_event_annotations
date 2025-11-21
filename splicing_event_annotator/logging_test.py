@@ -1,5 +1,5 @@
-from src.eventAnnotateProcessorList import EventAnnotateList
-from src.tsvAnnotateProcessor import TsvAnnotate
+from splicing_event_annotator.eventAnnotateProcessorList import EventAnnotateList
+from splicing_event_annotator.tsvAnnotateProcessor import TsvAnnotate
 import logging
 
 logging.basicConfig(level=logging.DEBUG)

@@ -1,5 +1,5 @@
 import logging
-from src.eventAnnotateProcessor import EventAnnotate
+from splicing_event_annotator.eventAnnotateProcessor import EventAnnotate
 
 class EventAnnotateList:
 
