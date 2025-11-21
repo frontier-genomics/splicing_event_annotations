@@ -1,6 +1,6 @@
-from src.eventAnnotateProcessor import EventAnnotate
-from src.eventAnnotateProcessorList import EventAnnotateList
-from src.tsvAnnotateProcessor import TsvAnnotate
+from splicing_event_annotator.eventAnnotateProcessor import EventAnnotate
+from splicing_event_annotator.eventAnnotateProcessorList import EventAnnotateList
+from splicing_event_annotator.tsvAnnotateProcessor import TsvAnnotate
 import csv
 
 def run_workflow(input, dataset, genome, tsv = False, columns = [0,1,2,3,4,5], output_file = ""):
