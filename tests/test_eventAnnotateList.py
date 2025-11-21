@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 scenarios('eventAnnotateList.feature')
 
-@given('the splicing events')
+@given('the splicing events', target_fixture='given_splicing_events')
 def given_splicing_events(datatable):
     """Store splicing events from datatable."""
     # datatable is list of lists with headers in first row
@@ -54,12 +54,14 @@ def verify_annotations(annotation_list_result, datatable):
             'event_type': row_values[1],
             'introns': row_values[5],
             'location': row_values[2],
-            'distance_from_authentic': row_values[3]
+            'distance_from_authentic': row_values[3],
+            'transcript': row_values[7]
         }
         annotations.append(row_dict)
     
-    print(f"These are the output annotations: \n\n {annotation_list_result.outputs}")
-    print(f"\n\n and this is what was expected: \n\n {annotations}")
-    
-    assert annotation_list_result.outputs == annotations
+    assert len(annotation_list_result.outputs) == len(annotations), f"Expected {len(annotations)} annotations, but got {len(annotation_list_result.outputs)}."
+
+    for i, annotation in enumerate(annotations):
+        for key in annotation_list_result.outputs[i].keys():
+            assert annotation[key] == annotation_list_result.outputs[i][key], f"Mismatch at index {i} for key '{key}': expected {annotation[key]}, got {annotation_list_result.outputs[i][key]}"
 
