@@ -567,7 +567,7 @@ The library uses GenePred Extended format from UCSC:
 ## Resources
 
 - [RefSeq Database](https://www.ncbi.nlm.nih.gov/refseq/)
-- [GenePred Format Documentation](http://genome.ucsc.edu/FAQ/FAQformat.html#GenePredExt)
+- [GenePred Format Documentation](https://genome.ucsc.edu/FAQ/FAQformat.html#GenePredExt)
 - [MANE Project](https://www.ncbi.nlm.nih.gov/refseq/MANE/)
 - [Pydantic Documentation](https://docs.pydantic.dev/)
 - [pytest-bdd Documentation](https://pytest-bdd.readthedocs.io/)
