@@ -34,10 +34,10 @@ class EventAnnotate:
         )
 
         self.coordinates = coordinates.model_dump()
-        logger.info(f"COORDINATES INITIALIZED: {{'chrom'='{self.coordinates['chrom']}', 'start'={self.coordinates['start']}, 'end'={self.coordinates['end']}, 'strand'='{self.coordinates['strand']}', 'transcript'='{self.coordinates['transcript']}', 'type'='{self.coordinates['type']}'}}")
+        logger.debug(f"COORDINATES INITIALIZED: {{'chrom'='{self.coordinates['chrom']}', 'start'={self.coordinates['start']}, 'end'={self.coordinates['end']}, 'strand'='{self.coordinates['strand']}', 'transcript'='{self.coordinates['transcript']}', 'type'='{self.coordinates['type']}'}}")
 
 
-    def process(self, dataset, genome, get_annotations = True):
+    def process(self, dataset, genome, get_annotations = True) -> dict:
 
         if get_annotations == True:
             self.refgene = EventAnnotate.read_refgene(dataset, genome)
@@ -81,7 +81,7 @@ class EventAnnotate:
         self.distance_from_authentic = str(annotations['distance_from_authentic'])
         self.transcript = str(annotations['transcript'])
 
-        logger.info(f"ANNOTATIONS RETURNED:{{'event'='{self.event}', 'event_type'={self.event_type}, 'introns'={self.introns}, 'location'='{self.location}', 'distance_from_authentic'='{self.distance_from_authentic}}}")
+        logger.debug(f"ANNOTATIONS RETURNED:{{'event'='{self.event}', 'event_type'={self.event_type}, 'introns'={self.introns}, 'location'='{self.location}', 'distance_from_authentic'='{self.distance_from_authentic}}}")
 
         return{'event': self.event,
                'event_type': self.event_type,
@@ -90,7 +90,7 @@ class EventAnnotate:
                'distance_from_authentic': self.distance_from_authentic,
                'transcript': self.transcript}
 
-    def get_mane_transcript(self, base=1):
+    def get_mane_transcript(self, base=1) -> dict:
 
         chrom = self.coordinates['chrom']
         start = self.coordinates['start']
@@ -148,11 +148,11 @@ class EventAnnotate:
                 if len(strand_matches) > 1:
                     transcript = ["NA", "NA"]
                     warning = "Multiple MANE transcripts found on same strand. Unable to assign transcript. Please supply."
-                    logger.error(f"MANE TRANSCRIPT NOT FOUND: {warning}")
+                    logger.warning("Multiple MANE transcripts found on same strand. Unable to assign transcript. Please supply.")
                 elif len(other_strand_matches) > 1:
                     transcript = ["NA", "NA"]
                     warning = "Multiple MANE transcripts found on opposite strand. Unable to assign transcript. Please supply."
-                    logger.error(f"MANE TRANSCRIPT NOT FOUND: {warning}")
+                    logger.warning("Multiple MANE transcripts found on opposite strand. Unable to assign transcript. Please supply.")
 
         return {"transcript": transcript[0],
                 "gene": transcript[1],
