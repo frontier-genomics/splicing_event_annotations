@@ -18,7 +18,8 @@
 				"jimasp.behave-vsc@prerelease",
 				"george-alisson.html-preview-vscode",
 				"ryanluker.vscode-coverage-gutters",
-				"alexkrechik.cucumberautocomplete"
+				"alexkrechik.cucumberautocomplete",
+				"bierner.markdown-mermaid"
 			]
 		}
 	},
