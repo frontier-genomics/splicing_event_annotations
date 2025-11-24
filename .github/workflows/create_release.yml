@@ -39,7 +39,7 @@ jobs:
 
     - name: Create version
       id: create_version
-      uses: anothrNick/github-tag-action@1.73.0
+      uses: anothrNick/github-tag-action@1.75.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         DEFAULT_BUMP: patch
@@ -54,7 +54,7 @@ jobs:
         TAG_LATEST: latest
         TAG_SEMVER: ${{ steps.create_version.outputs.tag }}
         TAG_SHA: ${{ github.sha }}
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: .
         push: true
