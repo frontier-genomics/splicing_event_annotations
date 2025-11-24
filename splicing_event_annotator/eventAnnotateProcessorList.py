@@ -20,10 +20,18 @@ class EventAnnotateList:
     def process(self):
         logging.info(f'Processing {len(self.inputs)} inputs')
         self.outputs = []
-        for input in self.inputs:
-            index = self.inputs.index(input) + 1
-            logging.info(f'Processing input {index}/{len(self.inputs)}')
+        
+        for i, input in enumerate(self.inputs):
+            index = i + 1
+            
+            # Log every 1000 records
+            if index % 1000 == 0:
+                logging.info(f'Processed {index} records')
+
             event_annotate = EventAnnotate(input['chrom'], input['start'], input['end'], input['strand'], input['transcript'], input['type'])
             output = event_annotate.process(self.dataset, self.genome, get_annotations=self.annotations)
             self.outputs.append(output)
+
+        logging.info(f'Finished processing {len(self.inputs)} inputs')
+
         return self.outputs

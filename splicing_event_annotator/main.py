@@ -142,6 +142,10 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Genome assembly matching the annotation dataset",
     )
 
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Enable verbose logging"
+    )
+
     if argv is None:
         argv = sys.argv[1:]
 
@@ -165,8 +169,12 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: Sequence[str] | None = None) -> None:
-    logging.basicConfig(level=logging.INFO)
     args = parse_args(argv)
+
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
 
     if args.output_path.exists():
         logger.warning("Output file %s already exists and will be overwritten", args.output_path)
