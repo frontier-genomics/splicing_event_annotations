@@ -8,6 +8,11 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
+# 2. Install system packages (ps from procps)
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends procps \
+    && rm -rf /var/lib/apt/lists/*
+
 # 3. Install Python deps with good caching
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
