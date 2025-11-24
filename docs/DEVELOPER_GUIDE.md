@@ -339,14 +339,14 @@ splicing_event_annotations/
 │   ├── eventAnnotateProcessor.py # Core annotation logic
 │   ├── eventAnnotateProcessorList.py  # Batch processing
 │   ├── tsvAnnotateProcessor.py   # TSV parsing
-│   └── bedExpandProcessor.py     # BED parsing
+│   ├── bedExpandProcessor.py     # BED parsing
+│   └── reference/                # Reference annotations
+│       ├── hg38/
+│       └── hg19/
 ├── tests/                        # Test suite
 │   ├── conftest.py              # Pytest configuration
 │   ├── *.feature                # BDD feature files
 │   └── test_*.py                # Test implementations
-├── reference/                    # Reference annotations
-│   ├── hg38/
-│   └── hg19/
 ├── resources/                    # Test data and resources
 ├── docs/                        # Documentation
 ├── requirements.txt             # Production dependencies
@@ -420,7 +420,7 @@ def test_canonical_splicing(chrom, start, end, strand, event_type, transcript, e
 ### Test Data
 
 Test data is located in:
-- `reference/hg38/`: Reference annotations for testing
+- `splicing_event_annotator/reference/hg38/`: Reference annotations for testing
 - Test cases use real genes with known splicing patterns
 - Genes are primarily from chromosome X to keep test files small
 
@@ -512,7 +512,7 @@ MANE (Matched Annotation from NCBI and EBI) provides a standardized set of repre
 To use custom annotations:
 
 1. Format as GenePred extended format
-2. Place in `reference/{genome}/` directory
+2. Place in `splicing_event_annotator/reference/{genome}/` directory
 3. Update `read_refgene()` if needed
 
 ### Performance Optimization
