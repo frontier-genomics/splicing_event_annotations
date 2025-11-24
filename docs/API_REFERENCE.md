@@ -340,7 +340,12 @@ Parse a GenePred format file.
 
 **Example:**
 ```python
-records = EventAnnotate.read_genepred('reference/hg38/genes.refGene', skip_first_column=True)
+# Using package resources (recommended)
+records = EventAnnotate.read_refgene('refseq', 'hg38')
+
+# Or for custom files, use read_genepred directly
+from pathlib import Path
+records = EventAnnotate.read_genepred(Path('custom_annotations.refGene'), skip_first_column=True)
 ```
 
 ---

@@ -45,5 +45,8 @@ jobs:
 
     - name: Run tests
       run: |
+        mkdir -p tests/fixtures && \
+        touch tests/fixtures/tmp_sample_output.tsv && \
+        chmod 666 tests/fixtures/tmp_sample_output.tsv && \
         docker run -v $(pwd):/data --rm splicing_event_annotations /data/tests/fixtures/sample.tsv /data/tests/fixtures/tmp_sample_output.tsv && \
         diff tests/fixtures/tmp_sample_output.tsv tests/fixtures/sample_output.tsv
