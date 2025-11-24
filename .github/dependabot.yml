@@ -1,0 +1,86 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # ---- Python (pip) ----
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Australia/Sydney"
+    target-branch: "main"
+    open-pull-requests-limit: 5
+    rebase-strategy: "auto"
+    labels: ["dependencies", "python"]
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    groups:
+      production-deps:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "pytest*"
+          - "black"
+          - "ruff"
+          - "mypy"
+          - "*[test]*"
+        update-types:
+          - "minor"
+          - "patch"
+      dev-deps:
+        patterns:
+          - "pytest*"
+          - "black"
+          - "ruff"
+          - "mypy"
+          - "*[test]*"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+
+  # ---- Dockerfiles ----
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Australia/Sydney"
+    target-branch: "main"
+    open-pull-requests-limit: 3
+    rebase-strategy: "auto"
+    labels: ["dependencies", "docker"]
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    groups:
+      docker-images:
+        patterns: ["*"]
+        update-types:
+          - "patch"
+
+  # ---- GitHub Actions ----
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Australia/Sydney"
+    target-branch: "main"
+    open-pull-requests-limit: 3
+    rebase-strategy: "auto"
+    labels: ["dependencies", "github-actions"]
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    groups:
+      github-actions-all:
+        patterns: ["*"]
