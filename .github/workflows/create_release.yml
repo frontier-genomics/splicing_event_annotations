@@ -1,0 +1,72 @@
+name: create_release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+      
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.12'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+        
+    - name: Run tests
+      run: |
+        ./run-tests.sh
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ vars.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Create version
+      id: create_version
+      uses: anothrNick/github-tag-action@1.73.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        DEFAULT_BUMP: patch
+
+    - name: Create Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build and push
+      env:
+        USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+        REPOSITORY: splicing_event_annotations
+        TAG_LATEST: latest
+        TAG_SEMVER: ${{ steps.create_version.outputs.tag }}
+        TAG_SHA: ${{ github.sha }}
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ env.USERNAME }}/${{ env.REPOSITORY }}:${{ env.TAG_LATEST }},
+              ${{ env.USERNAME }}/${{ env.REPOSITORY }}:${{ env.TAG_SEMVER }},
+              ${{ env.USERNAME }}/${{ env.REPOSITORY }}:${{ env.TAG_SHA }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Create release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.create_version.outputs.tag }}
+        generate_release_notes: true
+        token: ${{ github.token }}
