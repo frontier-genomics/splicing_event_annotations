@@ -2,7 +2,7 @@
 set -e
 
 echo "Downloading Refseq (ncbiRefSeq)"
-mkdir -p splicing_event_annotator/reference
+mkdir -p splicing_event_annotator/reference/hg19
 docker run -e MYSQL_ALLOW_EMPTY_PASSWORD=1 --rm mysql mysql -ugenome -hgenome-euro-mysql.soe.ucsc.edu --compression-algorithms zlib -AD hg19 -BNe "SELECT r.bin,
     r.name,
     REPLACE(r.chrom, 'chr', '') AS chrom,
