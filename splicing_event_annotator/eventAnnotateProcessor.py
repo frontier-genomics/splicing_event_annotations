@@ -1,6 +1,7 @@
 import logging
 from pydantic import BaseModel
 from typing import List
+from importlib.resources import files
 
 logger = logging.getLogger(__name__)
 
@@ -764,7 +765,9 @@ class EventAnnotate:
     @staticmethod
     def read_refgene(dataset, genome):
         if dataset == "refseq":
-            input_file = f"reference/{genome}/genes.refGene"
+            # Use package resources to get the file path
+            ref_package = files('splicing_event_annotator').joinpath('reference')
+            input_file = ref_package.joinpath(genome).joinpath('genes.refGene')
         elif dataset == "ensembl":
             raise ValueError("Ensembl annotations are currently not supported. Please try again with 'refseq'.")
         else:
@@ -795,31 +798,40 @@ class EventAnnotate:
 
         dataset = []
 
-        with open(input_file, 'r') as infile:
-            for line in infile:
-                # Skip comments.
-                if line.startswith('#'):
-                    continue
-                row = line.rstrip('\n').split('\t')
-                if skip_first_column:
-                    row = row[1:]
-                # Skip trailing ,
-                exon_starts = list(map(int, row[8].split(',')[:-1]))
-                exon_ends = list(map(int, row[9].split(',')[:-1]))
-                exons = [coord for pair in zip(exon_starts, exon_ends) for coord in pair]
-                        
-                data = {
-                    'chrom': f"chr{row[1]}",
-                    'start': int(row[3]),
-                    'end': int(row[4]),
-                    'id': row[0],
-                    'strand': row[2],
-                    'cds_start': int(row[5]),
-                    'cds_end': int(row[6]),
-                    'gene_name': row[11],
-                    'exons': exons,
-                    'mane': row[15]
-                }
-                dataset.append(data)
+        # Handle both string paths and Traversable objects from importlib.resources
+        if hasattr(input_file, 'read_text'):
+            # It's a Traversable object from importlib.resources
+            content = input_file.read_text()
+            lines = content.split('\n')
+        else:
+            # It's a regular file path
+            with open(input_file, 'r') as infile:
+                lines = infile.readlines()
+        
+        for line in lines:
+            # Skip empty lines and comments
+            if not line or line.startswith('#'):
+                continue
+            row = line.rstrip('\n').split('\t')
+            if skip_first_column:
+                row = row[1:]
+            # Skip trailing ,
+            exon_starts = list(map(int, row[8].split(',')[:-1]))
+            exon_ends = list(map(int, row[9].split(',')[:-1]))
+            exons = [coord for pair in zip(exon_starts, exon_ends) for coord in pair]
+                    
+            data = {
+                'chrom': f"chr{row[1]}",
+                'start': int(row[3]),
+                'end': int(row[4]),
+                'id': row[0],
+                'strand': row[2],
+                'cds_start': int(row[5]),
+                'cds_end': int(row[6]),
+                'gene_name': row[11],
+                'exons': exons,
+                'mane': row[15]
+            }
+            dataset.append(data)
 
         return dataset
